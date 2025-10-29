@@ -6,6 +6,7 @@ backend/apps/*/db/sqlite/*.db*
 backend/**/conf/hostname.json
 backend/apps/neuranet/aiapps/**/*
 !backend/apps/neuranet/aiapps/_org_neuranet_**/*
+backend/apps/neuranet/temp/**/* 
 backend/apps/neuranet/tests/vector_db/**/*
 backend/apps/neuranet/tests/tfidf_db/**/*
 backend/apps/neuranet/db/ai_db/**/*

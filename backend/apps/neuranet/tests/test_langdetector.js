@@ -3,7 +3,6 @@
  */
 
 const fspromises = require("fs").promises;
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const langdetector = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/langdetector.js`);
 
 exports.runTestsAsync = async function(argv) {

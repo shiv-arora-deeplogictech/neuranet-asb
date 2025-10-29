@@ -12,13 +12,15 @@ interface:                                  # the interface details
     - ^\.system?.+
 endpoint: llmflow                           # the API endpoint - usually llmflow
 users: ["*"]                                # the * means all users, else must be an array of user IDs
-admins: ["thecompany@tekmonks.com"]         # the admins for this app - they can train for example
+admins:                                     # the admins for this app - they can train for example
+  - thecompany@tekmonks.com
+  - rvkapoor@tekmonks.com     
 api_uploads_cms_path: uploads               # where files are uploaded by index, unindex APIs
 generated_files_path: _neuranet_generated   # where generated files are placed
 ai_cost_quota: 0.6                          # cost quota for the users, -1 disables checks also
 disable_quota_checks: true                  # disable quotas if true
 disable_model_usage_logging: true           # if true, ai model usage logging
-ingestiondbs: ["nntfidfdb"]   # the ingestion databases
+ingestiondbs: ["nntfidfdb"]                 # the ingestion databases
 
 # all flows are sequence of commands which follow the same syntax - command, in, out - in is the input
 # to the command, out is the variable holding the output and name points to the command module and entry
@@ -115,9 +117,9 @@ llm_flow:
       documents_js: return airesponse.documents  
       files_js: return request.files
       tmp_dir_name: /tempdir/
+      line_to_code_ratio: 0.7               # how many lines of Python code in the response as a ratio for code extration to work
       prompt_noinflate: |                   # means do not inflate this at the flow engine - the calling command will use it as is
-        Answer the question.
-        {{#files.length}}Also use information from the files attached.{{/files.length}}
+        {{#files.length}}Use information from the files attached.{{/files.length}}
 
         {{#files.length}}Files attached:{{/files.length}}
         {{#files}}
@@ -126,7 +128,7 @@ llm_flow:
 
         {{/files}}
 
-        Documents:
+        {{#documents.length}}Documents:{{/documents.length}}
         {{#documents}}
         {{{content}}}
 
@@ -135,7 +137,7 @@ llm_flow:
         Question:
         {{{question}}}
 
-        The answer is:
+        The answer or Python code which prints the answer is:
       prompt_code_compile_failed_noinflate: | 
         The previous Python code failed to compile. Fix the error in the code so that it compiles and executes.
         Old code:
@@ -151,20 +153,21 @@ llm_flow:
         {{{error}}}
         New Python code with fixes:
       prompt_code_retry_exceeded_noinflate: |
-        Inform the user that we are unable to answer the question, despite may tries as the Python code 
-        generated for analysis is not working. The question asked was {{{question}}}. Answer in the same 
-        language as the question.
+        Inform the user that we are unable to answer the question, despite may tries as the Python code generated for analysis is not working. The question asked was {{{question}}}. Answer in the same language as the question.
       model: 
         name: chat-knowledgebase-openai
         model_overrides: 
           system_message: |
-            You are a helpful assistant who responds with the answer or only responds with executable Python code which when executed returns the answer using print statement. The attached files are saved to a disk path /tempdir/[name of the file] which you can use in your generated code.
+            You are a helpful assistant who responds with the answer or only responds with executable Python code which when executed returns the answer using print statement in a helpful language. The attached files are saved to a disk path /tempdir/[name of the file] which you can use in your generated code.
+      model-simplellm:
+        name: simplellm-openai
     out: airesponse                         # the final response must output to this property - airesponse for LLM flows
 
 global_models:
   - name: chat-knowledgebase-openai
     model_overrides:                    
-      read_ai_response_from_samples: false
+      read_ai_response_from_samples: true
+      sample_ai_response: chat_ai_code_response.json
 
   - name: simplellm-openai
     model_overrides:                    

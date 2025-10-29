@@ -4,7 +4,6 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const llmflow = require(`${NEURANET_CONSTANTS.APIDIR}/llmflow.js`);
 
 const TEST_ID = "test@tekmonks.com", TEST_ORG = "Tekmonks", TEST_APP = require(`${__dirname}/conf/testing.json`).aiapp;

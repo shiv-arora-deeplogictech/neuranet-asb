@@ -1,12 +1,15 @@
 /**
- * Initializes the application.
- * (C) TekMonks. All rights reserved.
+ * Neuranet app init.
+ * (C) 2023 TekMonks. All rights reserved.
  */
 
-const fs = require("fs");
+exports.initSync = function(_app, approot) {
+    global.LOGINAPP_CONSTANTS = {ENV: {}}; // legacy
+    require(`${approot}/xbinapp/lib/init.js`).initSync();    // because we rely on XBin's constants in Neuranet
 
-exports.initSync = appName => {
-    for (const dirEntry of fs.readdirSync(__dirname, {withFileTypes: true}))   // init wrapped apps
-        if (dirEntry.isFile() && dirEntry.name.toLowerCase().endsWith("_init.js")) 
-            require(`${__dirname}/${dirEntry.name}`).initSync();
+    const NEURANET_APP_LIBDIR = `${approot}/lib`;
+    global.NEURANET_CONSTANTS = require(`${NEURANET_APP_LIBDIR}/neuranetconstants.js`);
+    global.NEURANET_CONSTANTS.XBIN_CONSTANTS = global.XBIN_CONSTANTS;
+
+    require(`${NEURANET_CONSTANTS.LIBDIR}/init.js`).initSync(approot);
 }

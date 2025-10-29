@@ -4,8 +4,7 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
-const XBIN_CONSTANTS = LOGINAPP_CONSTANTS.ENV.XBIN_CONSTANTS;
+const XBIN_CONSTANTS = NEURANET_CONSTANTS.XBIN_CONSTANTS;
 const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
 const renamefile = require(`${XBIN_CONSTANTS.API_DIR}/renamefile.js`);
 

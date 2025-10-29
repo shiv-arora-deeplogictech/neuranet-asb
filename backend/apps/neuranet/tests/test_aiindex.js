@@ -10,7 +10,6 @@ const path = require("path");
 const fspromises = require("fs").promises;
 const rest = require(`${CONSTANTS.LIBDIR}/rest.js`);
 const conf = require(`${__dirname}/conf/testing.json`);
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
 const indexdoc = require(`${NEURANET_CONSTANTS.APIDIR}/indexdoc.js`);
 

@@ -5,10 +5,19 @@
 const fs = require("fs");
 const path = require("path");
 const fspromises = fs.promises;
-const login = require(`${LOGINAPP_CONSTANTS.API_DIR}/login.js`);
-const loginappAPIKeyChecker = require(`${LOGINAPP_CONSTANTS.LIB_DIR}/loginappAPIKeyChecker.js`);
+
+let login;
 
 const DEFAULT_MAX_PATH_LENGTH = 50, CMSPATH_MODIFIERS = [], SAFE_CMS_PATHS = [];
+
+/**
+ * Allows embedding app to override with its login subsystem
+ * @param {object} newLoginModule The new login module
+ */
+exports.setLoginModule = newLoginModule => login = newLoginModule;
+
+/** @returns The login module being used right now */
+exports.getLoginModule = _ => login;
 
 /**
  * @param {object} headersOrLoginIDAndOrg HTTP request headers or {xbin_id, xbin_org} object
@@ -79,8 +88,8 @@ exports.getOrg = headersOrLoginIDAndOrg => headersOrLoginIDAndOrg.xbin_org || lo
  * @returns {boolean} true on success, false on failure
  */
 exports.isSecure = async (headersOrHeadersAndOrg, path, extraInfo) => {	// add domain check here to ensure ID and org domains are ok
-	const isKeySecure = headersOrHeadersAndOrg.xbin_org && headersOrHeadersAndOrg.headers ? 
-		await loginappAPIKeyChecker.isAPIKeySecure(headersOrHeadersAndOrg.headers, headersOrHeadersAndOrg.xbin_org) : true;
+	const isKeySecure = headersOrHeadersAndOrg.xbin_org && headersOrHeadersAndOrg.headers && login.isAPIKeySecure ? 
+		await login.isAPIKeySecure(headersOrHeadersAndOrg.headers, headersOrHeadersAndOrg.xbin_org) : true;
 	return isKeySecure && XBIN_CONSTANTS.isSubdirectory(path, await this.getCMSRoot(headersOrHeadersAndOrg, extraInfo));
 }
 

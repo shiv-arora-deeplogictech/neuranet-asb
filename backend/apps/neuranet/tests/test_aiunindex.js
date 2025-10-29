@@ -4,7 +4,6 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 const path = require("path");
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
 const unindexdoc = require(`${NEURANET_CONSTANTS.APIDIR}/unindexdoc.js`);
 

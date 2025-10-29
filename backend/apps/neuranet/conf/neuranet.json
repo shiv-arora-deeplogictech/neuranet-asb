@@ -1,0 +1,80 @@
+{
+"tkmlogin_api": "https://login.tekmonks.com:8443/apps/loginapp/validatejwt",
+"crypt_key":"82577als2141rwq294938wasj3029ldwpz",
+"ai_model_default": "chat-openai",
+"debug_mode": true,
+"multithreaded": false,
+"verbose_log": false,
+"disable_xbin": false,
+"disable_private_cms": true,
+"dynamic_aiapps": true,
+"java_home": "/Users/rvkapoor/Documents/Programs/source/java",
+"db_server_host": "sqlite://{{{hostname}}}",
+"default_ai_cost_quota": 0.6,
+"fastcache_timeout": 10000,
+"cluster_size": 2,
+"python_path": "{{{APPROOT}}}/3p/python.sh",
+
+"ai_models": {
+    "chat-openai": {
+        "name": "chat-openai",
+        "driver":{"module":"ailibGPT35.js", "host":"apiboss.org", "port":9090, 
+            "path":"/tekmonks.com/v1/chat/completions", "backoffwait": 120, "backoffexponent": 2, 
+            "api_overloaded_max_retries": 5, "api_wait_timeout": 60000, "max_requests_per_second":50, 
+            "http_retry_codes": ["*"]}, 
+        "request":{ 
+            "model": "gpt-4o-mini", "temperature": 1.0, "stream": false, "max_tokens": 128000, 
+            "presence_penalty": 0, "frequency_penalty": 0,  "top_p": 1, "store": false, 
+            "response_format": {"type": "text"}
+        },
+        "ai_key": "937916dc3805054a2f657c2af513a4bf954678950d2df8b6a0d5c7a7539a63e838a6125aeb83831ce4b04d12bc3344555c7f609a9119c99b43f6505e5342d7a0a476a5bb70816144600f9bdfa4c86835e99dd813a35afe8a9b383c101ac71b38f5b99889bd7e1774d76068268ae3fbbca0d272fed7d2431840df5515654eb14c6686d1972f3e7dad864730cde8ddcde1ec6bc63abe300d10d3bde55ebce247b12fa6881a95c97edfae34aa44 82577als2141rwq294938wasj3029ldwpz",
+        "x_api_key" :"6c1fcadd-dcf0-40b9-ac90-fa4d24c08b46",
+        "request_contentpath": "messages",
+        "response_contentpath": "data.choices[0].message.content",
+        "response_finishreason": "data.choices[0].finish_reason",
+        "response_ok_finish_reasons": ["stop"],
+        "response_cost_of_query_path": "data.usage.total_tokens",
+        "user_role": "user",
+        "assistant_role": "assistant",
+        "system_message": "You are a helpful assistant",
+        "system_role": "system",
+        "token_approximation_uplift": 1.10,
+        "tokenizer": "gpt-tokenizer",
+        "price_per_unit": "0.000002",
+        "max_memory_tokens": 12000,
+        "sample_ai_response": "chat_ai_response.json",
+        "read_ai_response_from_samples": true
+    },
+
+    "chat-knowledgebase-openai": {"inherits": "chat-openai", "name": "chat-knowledgebase-openai"},
+
+    "simplellm-openai": {"inherits": "chat-openai", "name": "simplellm-openai"},
+
+    "embedding-openai": {
+        "name": "embedding-openai",
+        "driver":{"module":"ailibGPT35.js", "host":"apiboss.org", "port":9090, 
+            "path":"/tekmonks.com/v1/embeddings", "backoffwait": 120, "backoffexponent": 2, 
+            "api_overloaded_max_retries": 5, "api_wait_timeout": 60000, "max_requests_per_second":50, 
+            "http_retry_codes": ["*"]}, 
+        "request":{ 
+            "model": "text-embedding-3-small", 
+            "input":"${__ORG_NEURANET_PROMPT__}",
+            "max_tokens": 8191
+        },
+        "ai_key": "937916dc3805054a2f657c2af513a4bf954678950d2df8b6a0d5c7a7539a63e838a6125aeb83831ce4b04d12bc3344555c7f609a9119c99b43f6505e5342d7a0a476a5bb70816144600f9bdfa4c86835e99dd813a35afe8a9b383c101ac71b38f5b99889bd7e1774d76068268ae3fbbca0d272fed7d2431840df5515654eb14c6686d1972f3e7dad864730cde8ddcde1ec6bc63abe300d10d3bde55ebce247b12fa6881a95c97edfae34aa44 82577als2141rwq294938wasj3029ldwpz",
+        "x_api_key" :"6c1fcadd-dcf0-40b9-ac90-fa4d24c08b46",
+        "split_separators": {"en":[".","\n"," "], "zh":["。","\n"," ","."], "ja":["。","\n"," ","."], "*":["。",".","\n"," "]},
+        "split_joiners": {"*":["\n\n"]},
+        "overlap": 0,
+        "vector_chunk_size": {"en":4400, "zh":880, "ja":1000, "*":880},
+        "request_chunk_size": {"en":4400, "zh":880, "ja":1000, "*":880},
+        "default_vector_db": "default_db",
+        "response_contentpath": "data.data[0].embedding",
+        "response_cost_of_query_path": "data.usage.total_tokens",
+        "sample_ai_response": "module(genRandomEmbedding.js),embedding_ai_response.json,1536,data.data[0].embedding",
+        "read_ai_response_from_samples": true,
+        "token_approximation_uplift": 1.10,
+        "price_per_unit": "0.0000001"
+    }
+}
+}

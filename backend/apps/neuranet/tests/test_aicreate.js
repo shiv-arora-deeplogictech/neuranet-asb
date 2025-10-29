@@ -4,8 +4,7 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 const blackboard = require(`${CONSTANTS.LIBDIR}/blackboard.js`);
-const XBIN_CONSTANTS = LOGINAPP_CONSTANTS.ENV.XBIN_CONSTANTS;
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
+const XBIN_CONSTANTS = NEURANET_CONSTANTS.XBIN_CONSTANTS;
 const createfile = require(`${XBIN_CONSTANTS.API_DIR}/createfile.js`);
 const operatefile = require(`${XBIN_CONSTANTS.API_DIR}/operatefile.js`);
 

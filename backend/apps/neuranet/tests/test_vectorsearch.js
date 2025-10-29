@@ -4,7 +4,6 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const aidbfs = require(`${NEURANET_CONSTANTS.LIBDIR}/aidbfs.js`);
 const aiutils = require(`${NEURANET_CONSTANTS.LIBDIR}/aiutils.js`);
 const embedding = require(`${NEURANET_CONSTANTS.LIBDIR}/embedding.js`);

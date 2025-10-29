@@ -9,7 +9,6 @@ const testuser_org = "Tekmonks";
 const testuser_id = "websitecrawltest@tekmonks.com";
 const utils = require(`${CONSTANTS.LIBDIR}/utils.js`);
 const blackboard = require(`${CONSTANTS.LIBDIR}/blackboard.js`);
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 
 exports.runTestsAsync = async function(argv) {
     if ((!argv[0]) || (argv[0].toLowerCase() != "webcrawl")) {

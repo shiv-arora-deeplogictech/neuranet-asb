@@ -7,7 +7,6 @@
 const fs = require("fs");
 const path = require("path");
 const serverutils = require(`${CONSTANTS.LIBDIR}/utils.js`);
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const aitfidfdb = require(`${NEURANET_CONSTANTS.LIBDIR}/aitfidfdb.js`);
 
 const TEST_ID = "test@tekmonks.com", TEST_ORG = "Tekmonks";

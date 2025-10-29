@@ -59,5 +59,6 @@ export const i18n = {
 "AIWorkshop_UnpublishAIApp": "Unpublish",
 "AIWorkshop_AIAppNamePrompt": "Enter AI Application ID",
 "AIWorkshop_AIAppGenericError": "Error in AI application",
-"AIWorkshop_AIAppAlreadyExists": "Error an app by that ID already exists"
+"AIWorkshop_AIAppAlreadyExists": "Error an app by that ID already exists",
+"AIWorkshop_TemplateLabel": "Select template"
 }

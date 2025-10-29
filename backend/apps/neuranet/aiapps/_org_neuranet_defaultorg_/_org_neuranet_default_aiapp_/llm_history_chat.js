@@ -20,8 +20,6 @@
  * (C) 2023 TekMonks. All rights reserved.
  */
 
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
-
 /**
  * Runs the LLM. 
  * 

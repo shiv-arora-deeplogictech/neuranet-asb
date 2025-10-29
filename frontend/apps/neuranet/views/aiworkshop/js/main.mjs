@@ -14,7 +14,7 @@ const MODULE_PATH = util.getModulePathFromURL(import.meta.url), VIEW_PATH = util
 const API_GET_AIAPPS = "getorgaiapps", API_OPERATEAIAPP = "operateaiapp";
 const DIALOG_ID = "dialog";
 
-let selectedAIAppID, allAIApps, neuranetapp;
+let selectedAIAppID, allAIApps, neuranetapp, cached_templates;
 
 async function initView(data, neuranetappIn) {
     neuranetapp = neuranetappIn;
@@ -63,22 +63,26 @@ async function aiappSelected(divAIApp, aiappid) {
 
 async function newAIApp() {
     const loginresponse = session.get(APP_CONSTANTS.LOGIN_RESPONSE);
-    if(loginresponse.role==="admin"){
-    const appName = await _prompt(await i18n.get("AIWorkshop_AIAppNamePrompt"));
-    if (!(appName?.trim())) return;   // nothing to do
-    if (allAIApps.some(value => value.id.toLowerCase() == appName.toLowerCase())) {    // app already exists, don't overwrite
-        _showError(await i18n.get("AIWorkshop_AIAppAlreadyExists"));
-        return;
-    }
+    if (loginresponse.role==="admin") {
+        const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
+        const templates = cached_templates || (await apiman.rest(
+            `${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", {id, org, op: "listtemplates"}, true)).templates || [];
+        if (!cached_templates) cached_templates = templates;
+        const newApp = await _prompt(`${VIEW_PATH}/dialogs/prompt.html`, 
+            {prompt: await i18n.get("AIWorkshop_AIAppNamePrompt"), templates, 
+            templatelabel: await i18n.get("AIWorkshop_TemplateLabel")}, ["name", "template"]);
+        const appName = newApp.name, appTemplate = newApp.template;
+        if (!(appName?.trim())) return;   // nothing to do
+        if (allAIApps.some(value => value.id.toLowerCase() == appName.toLowerCase())) {    // app already exists, don't overwrite
+            _showError(await i18n.get("AIWorkshop_AIAppAlreadyExists"));
+            return;
+        }
 
-    const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
-    const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", 
-        {id, org, aiappid: appName, op: "new"}, true);
-    if (result && result.result) {await neuranetapp.refreshAIApps(); router.reload();}
-    else _showError(await i18n.get("AIWorkshop_AIAppGenericError"));
-    } else {
-    await _showError(await i18n.get("AIWorkshop_NotAdmin"));
-} 
+        const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", 
+            {id, org, aiappid: appName, template: appTemplate, op: "new"}, true);
+        if (result && result.result) {await neuranetapp.refreshAIApps(); router.reload();}
+        else _showError(await i18n.get("AIWorkshop_AIAppGenericError"));
+    } else await _showError(await i18n.get("AIWorkshop_NotAdmin"));
 }
 
 async function deleteAIApp() {
@@ -126,11 +130,11 @@ async function trainAIApp() {
 
 const close = _ => neuranetapp.closeview();
 
-async function _prompt(prompt) {
-    const answer = await monkshu_env.components["dialog-box"].showDialog(
-        `${VIEW_PATH}/dialogs/prompt.html`, true, true, {prompt}, DIALOG_ID, ["prompt"]);
+async function _prompt(prompthtml, data, outputs) {
+    const answer = await monkshu_env.components["dialog-box"].showDialog(prompthtml, true, true, data, DIALOG_ID, outputs);
     monkshu_env.components["dialog-box"].hideDialog(DIALOG_ID);
-    return answer.prompt;
+    const retObject = {}; for (const output of outputs) retObject[output] = answer[output];
+    return retObject;
 }
 
 const _showMessage = (message) => monkshu_env.components["dialog-box"].showMessage(message, DIALOG_ID);

@@ -9,7 +9,6 @@ const path = require("path");
 const zlib = require("zlib");
 const assert = require("assert").strict;
 const csvparser = require("papaparse");
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const aivectordb = require(`${NEURANET_CONSTANTS.LIBDIR}/aivectordb.js`);
 const aivectordb_test_path = `${__dirname}/vector_db/test@tekmonks.com_Tekmonks`;
 

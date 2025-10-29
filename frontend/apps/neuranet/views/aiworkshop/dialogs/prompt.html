@@ -4,12 +4,30 @@
         color: #444444;
     }
 
-    input#prompt {
+    input#name {
         outline: none;
         border: 0;
         border-bottom: 1px #03B3FF solid;
         width: 100%;
         color: #444444;
+        margin-bottom: 1em;
+    }
+
+    label {font-size: smaller;}
+
+    select#template {
+        border: 1px #03B3FF solid;
+        border-radius: 0.2em;
+        box-sizing: border-box;
+        padding: 0.2em;
+        width: 100%;
+        color: #444444;
     }
 </style>
-<input id="prompt" type="text" placeholder="{{{prompt}}}">
+<input id="name" type="text" placeholder="{{{prompt}}}">
+<label for="template">{{templatelabel}}</label>
+<select id="template" name="template">
+{{#templates}}
+<option value="{{id}}">{{label}}</option>
+{{/templates}}
+</select>

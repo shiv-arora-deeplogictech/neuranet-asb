@@ -1,7 +1,0 @@
-[
-    "BEGIN TRANSACTION",
-	
-    "CREATE TABLE keys(key varchar not null, org varchar not null, foreign key(org) references orgs(name) on delete cascade on update cascade)",
-
-    "COMMIT TRANSACTION"
-]

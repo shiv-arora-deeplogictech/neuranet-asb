@@ -4,7 +4,6 @@
  * (C) 2023 Tekmonks. All rights reserved.
  */
 
-const NEURANET_CONSTANTS = LOGINAPP_CONSTANTS.ENV.NEURANETAPP_CONSTANTS;
 const operateaiapp = require(`${NEURANET_CONSTANTS.APIDIR}/operateaiapp.js`);
 
 const TEST_ID = "test@tekmonks.com", TEST_ORG = "Tekmonks";
