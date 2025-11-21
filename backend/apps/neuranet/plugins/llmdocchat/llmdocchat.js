@@ -64,7 +64,7 @@ exports.answer = async (params) => {
 		aiModelObjectForChat = aiModelObject;	if (!aiModelObjectForChat) {LOG.error("Bad AI Library or model"); return {reason: REASONS.BAD_MODEL, ...CONSTANTS.FALSE_RESULT}}
 	const {sessionID} = chatsessionmod.getUsersChatSession(id, params_session_id);
 
-	const languageDetectedForQuestion =  langdetector.getISOLang(params.question)
+	const languageDetectedForQuestion =  langdetector.getISOLang(params.question);
 
 	const validateDocumentsOrFiles = (fileOrDocArray) => fileOrDocArray && fileOrDocArray.length !=0;
 	const documentResultsForPrompt = params.documents;	// if no documents found, short-circuit with no knowledge error
@@ -84,17 +84,7 @@ exports.answer = async (params) => {
 		}
 		metadatasForResponse.push(metadataThis) 
 	};
-	let filesForPrompt = undefined; if (validateDocumentsOrFiles(params.files)) for (const file of params.files) {
-		const textsteam = await textextractor.extractTextAsStreams(Readable.from(Buffer.from(file.bytes64, "base64")), file.filename);
-		const text = await neuranetutils.readFullFile(textsteam, "utf8");
-		if (text) {
-			if (!filesForPrompt) filesForPrompt = []; 
-			filesForPrompt.push({filename: file.filename, text}); 
-			const metadataForReferenceThisFile = {}; 
-			metadataForReferenceThisFile[NEURANET_CONSTANTS.REFERENCELINK_METADATA_KEY] = file.filename;
-			metadatasForResponse.push(metadataForReferenceThisFile);
-		}
-	}
+	let filesForPrompt = await exports.getFilesForPrompt(params.files);
 	const knowledgebasePromptTemplate =  params[`prompt_${languageDetectedForQuestion}`] || params.prompt;
 	const knowledegebaseWithQuestion = mustache.render(
 		knowledgebasePromptTemplate, {...params, documents: documentsForPrompt, files: filesForPrompt}).trim();
@@ -105,4 +95,20 @@ exports.answer = async (params) => {
 	const response = await llmchat.chat(paramsChat);
 
 	return {...response, metadatas: metadatasForResponse};
+}
+
+exports.getFilesForPrompt = async paramFiles => {
+	const validateDocumentsOrFiles = (fileOrDocArray) => fileOrDocArray && fileOrDocArray.length !=0;
+
+	let filesForPrompt = undefined; if (validateDocumentsOrFiles(paramFiles)) for (const file of paramFiles) {
+		const textsteam = await textextractor.extractTextAsStreams(Readable.from(Buffer.from(file.bytes64, "base64")), file.filename);
+		const text = await neuranetutils.readFullFile(textsteam, "utf8");
+		if (text) {
+			if (!filesForPrompt) filesForPrompt = []; 
+			filesForPrompt.push({filename: file.filename, text}); 
+			const metadataForReferenceThisFile = {}; 
+			metadataForReferenceThisFile[NEURANET_CONSTANTS.REFERENCELINK_METADATA_KEY] = file.filename;
+			metadatasForResponse.push(metadataForReferenceThisFile);
+		}
+	}
 }

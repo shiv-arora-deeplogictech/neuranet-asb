@@ -72,15 +72,16 @@ llm_flow:
           type: js
           dependencies:
             - listener
-          isAsync: false
-          js: message.content.airesponse = `Hello ${message.content.raw_question}`; 
+          isAsync: true
+          js: |
+            try {message.content.airesponse = await message.content.simplellmcall(message.content.raw_question)} 
+            catch (err) {message.content.airesponse = undefined;}
         output:
           type: inproc_responder
-          dependencies : 
-            - route0
+          dependencies : [["route0"],["route0.error"]]
     out: airesponse                         # the final response must output to this property - airesponse for LLM flows
 
 global_models:
   - name: chat-openai
     model_overrides:                    
-      read_ai_response_from_samples: true
+      read_ai_response_from_samples: false
