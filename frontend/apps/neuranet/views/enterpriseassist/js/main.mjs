@@ -11,9 +11,9 @@ import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
-const API_GET_EVENTS = "events";
+const API_SSE_EVENTS = "sseevents", NN_FILEUPDATE_EVENT_NAME = "nnfileupdate";
 
-let chatsessionID, VIEW_PATH;
+let chatsessionID, notification_events, VIEW_PATH;
 
 function initView(data) {
     const loginresponse = session.get(APP_CONSTANTS.LOGIN_RESPONSE), 
@@ -32,15 +32,13 @@ function initView(data) {
     data.aiskipfolders_base64_json = data.activeaiapp.interface.skippable_file_patterns?
         util.stringToBase64(JSON.stringify(data.activeaiapp.interface.skippable_file_patterns)) : undefined;
     data.icons_refresh = `${MODULE_PATH}/../img/newchat`;
+    setupSSEEvents();
 }
 
 async function getNotifications() {
-    const id = session.get(APP_CONSTANTS.USERID), org = session.get(APP_CONSTANTS.USERORG);
-    const events = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_GET_EVENTS}`, "GET", {id: id.toString(), 
-        org: org.toString()}, true);
-    if ((!events) || (!events.result)) LOG.error(`Error fetching events.`); 
+    if (!notification_events) LOG.debug(`No notification events.`); 
 
-    const eventsArray = []; if (events?.result) for (const event of Object.values(events.events)) 
+    const eventsArray = []; if (notification_events) for (const event of Object.values(notification_events.events)) 
         eventsArray.push({...event, success: event.result == true ? true : undefined, 
             error: event.result == true ? undefined : true, VIEW_PATH});
     
@@ -77,8 +75,15 @@ async function processAssistantResponse(chatbox, result, chatboxid, _aiappid) {
 }
 
 const getAssistantRequest = (question, files, _chatboxid, aiappid) => {
-    return {id: session.get(APP_CONSTANTS.USERID), org: session.get(APP_CONSTANTS.USERORG), question, 
-        session_id: chatsessionID, aiappid, files};
+    return {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
+        question, session_id: chatsessionID, aiappid, files};
+}
+
+function setupSSEEvents() {
+    const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
+    const sseURL = `${APP_CONSTANTS.API_PATH}/${API_SSE_EVENTS}`;
+    const sse = apiman.subscribeSSEEvents(sseURL, {id, org}, true);
+    sse.addEventListener(NN_FILEUPDATE_EVENT_NAME, event => notification_events = JSON.parse(event.data));
 }
 
 export const main = {initView, getNotifications, processAssistantResponse, getAssistantRequest};

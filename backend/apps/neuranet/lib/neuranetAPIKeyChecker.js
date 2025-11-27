@@ -8,7 +8,7 @@
 const utils = require(`${CONSTANTS.LIBDIR}/utils.js`);
 const login = require(`${NEURANET_CONSTANTS.APIDIR}/login.js`);
 
-const CHECKER_NAME = "loginapp_key_checker";
+const CHECKER_NAME = "neuranet_key_checker";
 
 function initSync() {
     APIREGISTRY.addCustomSecurityChecker(CHECKER_NAME, this);
@@ -22,7 +22,7 @@ async function checkSecurity(apiregentry, _url, req, headers, _servObject, reaso
 
     let allJWTClaimsCheck = true; // if the request carries a proper JWT, then use the stronger JWT check.
     if (apiregentry.query.loginapp_key_checker_enforce_for_jwt) for (const enforcedClaim of 
-            utils.escapedSplit(apiregentry.query.loginapp_key_checker_enforce_for_jwt, ",")) {
+            utils.escapedSplit(apiregentry.query.neuranet_key_checker_enforce_for_jwt, ",")) {
     
         if (enforcedClaim.trim() == "id" && login.getID(headers) != req.id) allJWTClaimsCheck = false;
         if (enforcedClaim.trim() == "org" && login.getOrg(headers)?.toLowerCase() != req.org?.toLowerCase()) allJWTClaimsCheck = false;

@@ -7,7 +7,7 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: auto;
     }
 
     div#main {
@@ -79,19 +79,35 @@
     }
 </style>
 {{{APP_CONSTANTS.MOBILE_MEDIA_QUERY_START}}}
-	div#main {flex-direction: column; max-height: 50%;}
+	div#main {
+        flex-direction: column; 
+        min-height: 18em;
+    }
     span#mainimage {max-height: 50%;}
-    div#body {padding: 0.5em 0.5em 1em 0.5em;}
-    span#mainspan {font-size: x-large; font-weight: 200;}
-    div#icons {flex-wrap: wrap;}
-    div#viewicon {width: calc((100% - 2em) / 2); max-width: unset; min-width: unset; height: calc(50% - 2em); margin: 0;}
+    div#body {padding: 0.5em 0.5em 1em 0.5em; overflow: auto;}
+    span#mainspan {font-size: large; font-weight: 200;}
+    div#icons {
+        flex-wrap: wrap; 
+        gap: 1em; 
+        overflow: hidden;
+        min-height: fit-content;
+    }
+    div#viewicon {
+        width: calc((100% - 2em) / 2); 
+        max-width: unset; 
+        min-width: unset; 
+        width: 7em;
+        height: 7em;
+        margin: 0;
+    }
 {{{APP_CONSTANTS.MOBILE_MEDIA_QUERY_END}}}
 
 {{{APP_CONSTANTS.MOBILE_MEDIA_QUERY_LANDSCAPE_START}}}
     div#main {flex-direction: row}
     span#mainimage {max-height: unset;}
     div#icons {flex-wrap: unset;}
-    div#viewicon { width: 10em; height: 100%;}
+    div#viewicon { width: 7em; height: 7em;}
+    img#viewicon { margin-bottom: 0; }
 {{{APP_CONSTANTS.MOBILE_MEDIA_QUERY_LANDSCAPE_END}}}
 
 <div id="body">

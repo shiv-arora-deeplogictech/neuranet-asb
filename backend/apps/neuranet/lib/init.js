@@ -16,7 +16,7 @@ exports.initSync = _approot => {
     const loginhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/loginhandler.js`);
     const brainhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/brainhandler.js`);
     const textextractor = require(`${NEURANET_CONSTANTS.LIBDIR}/textextractor.js`);
-    const loginappAPIKeyChecker = require(`${NEURANET_CONSTANTS.LIBDIR}/loginappAPIKeyChecker.js`);
+    const neuranetAPIKeyChecker = require(`${NEURANET_CONSTANTS.LIBDIR}/neuranetAPIKeyChecker.js`);
 
     dblayer.initDBAsync(true); // yes this is async so there is a slim chance by the first call it is still loading
     loginhandler.initSync(); 
@@ -24,7 +24,7 @@ exports.initSync = _approot => {
     events.initSync();
     brainhandler.initSync();
     aidbfs.initSync();
-    loginappAPIKeyChecker.initSync();
+    neuranetAPIKeyChecker.initSync();
     textextractor.initAsync();  // yes this is async so there is a slim chance by the first call it is still loading
 
     const clusterSize = NEURANET_CONSTANTS.CONF.cluster_size ||     // if conf has cluster size use it, else try from distributed memory, else use local core count 

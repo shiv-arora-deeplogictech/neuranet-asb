@@ -18,8 +18,8 @@
 "ai_models": {
     "chat-openai": {
         "name": "chat-openai",
-        "driver":{"module":"ailibGPT35.js", "host":"apiboss.org", "port":9090, 
-            "path":"/tekmonks.com/v1/chat/completions", "backoffwait": 120, "backoffexponent": 2, 
+        "driver":{"module":"ailibGPT35.js", "host":"api.openai.com", "port":443, 
+            "path":"/v1/chat/completions", "backoffwait": 120, "backoffexponent": 2, 
             "api_overloaded_max_retries": 5, "api_wait_timeout": 60000, "max_requests_per_second":50, 
             "http_retry_codes": ["*"]}, 
         "request":{ 
@@ -27,7 +27,7 @@
             "presence_penalty": 0, "frequency_penalty": 0,  "top_p": 1, "store": false, 
             "response_format": {"type": "text"}
         },
-        "ai_key": "937916dc3805054a2f657c2af513a4bf954678950d2df8b6a0d5c7a7539a63e838a6125aeb83831ce4b04d12bc3344555c7f609a9119c99b43f6505e5342d7a0a476a5bb70816144600f9bdfa4c86835e99dd813a35afe8a9b383c101ac71b38f5b99889bd7e1774d76068268ae3fbbca0d272fed7d2431840df5515654eb14c6686d1972f3e7dad864730cde8ddcde1ec6bc63abe300d10d3bde55ebce247b12fa6881a95c97edfae34aa44 82577als2141rwq294938wasj3029ldwpz",
+        "ai_key": "be3252b9814003657416bd27574d9f64c6c376d9e3465a2ca67dd7c5892b3687cf769b7b9794dd6ac331bfa12c730c6a8ace0fce8309d30b8f84b2bb87d367c770d787bd3f65a49cb1f3b375bedb0f8a59f47bc888677466cd67ac948d0c0bf158a28dff99e91d641b4413eb53c5446f46e0eba340883ea8a6db7dc35fd81ca970869e33c8f4b483f926782f482ca4eeaadb8b47df08a993bdca98806d01287125323320267c3361394f5610",
         "x_api_key" :"6c1fcadd-dcf0-40b9-ac90-fa4d24c08b46",
         "request_contentpath": "messages",
         "response_contentpath": "data.choices[0].message.content",
@@ -52,8 +52,8 @@
 
     "embedding-openai": {
         "name": "embedding-openai",
-        "driver":{"module":"ailibGPT35.js", "host":"apiboss.org", "port":9090, 
-            "path":"/tekmonks.com/v1/embeddings", "backoffwait": 120, "backoffexponent": 2, 
+        "driver":{"module":"ailibGPT35.js", "host":"api.openai.com", "port":443, 
+            "path":"/v1/embeddings", "backoffwait": 120, "backoffexponent": 2, 
             "api_overloaded_max_retries": 5, "api_wait_timeout": 60000, "max_requests_per_second":50, 
             "http_retry_codes": ["*"]}, 
         "request":{ 
@@ -61,7 +61,7 @@
             "input":"${__ORG_NEURANET_PROMPT__}",
             "max_tokens": 8191
         },
-        "ai_key": "937916dc3805054a2f657c2af513a4bf954678950d2df8b6a0d5c7a7539a63e838a6125aeb83831ce4b04d12bc3344555c7f609a9119c99b43f6505e5342d7a0a476a5bb70816144600f9bdfa4c86835e99dd813a35afe8a9b383c101ac71b38f5b99889bd7e1774d76068268ae3fbbca0d272fed7d2431840df5515654eb14c6686d1972f3e7dad864730cde8ddcde1ec6bc63abe300d10d3bde55ebce247b12fa6881a95c97edfae34aa44 82577als2141rwq294938wasj3029ldwpz",
+        "ai_key": "be3252b9814003657416bd27574d9f64c6c376d9e3465a2ca67dd7c5892b3687cf769b7b9794dd6ac331bfa12c730c6a8ace0fce8309d30b8f84b2bb87d367c770d787bd3f65a49cb1f3b375bedb0f8a59f47bc888677466cd67ac948d0c0bf158a28dff99e91d641b4413eb53c5446f46e0eba340883ea8a6db7dc35fd81ca970869e33c8f4b483f926782f482ca4eeaadb8b47df08a993bdca98806d01287125323320267c3361394f5610",
         "x_api_key" :"6c1fcadd-dcf0-40b9-ac90-fa4d24c08b46",
         "split_separators": {"en":[".","\n"," "], "zh":["。","\n"," ","."], "ja":["。","\n"," ","."], "*":["。",".","\n"," "]},
         "split_joiners": {"*":["\n\n"]},

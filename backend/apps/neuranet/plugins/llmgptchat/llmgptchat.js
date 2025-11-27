@@ -22,9 +22,9 @@
 
 const mustache = require("mustache");
 const llmchat = require(`${NEURANET_CONSTANTS.LIBDIR}/llmchat.js`);
-const llmdocchat = require(`${NEURANET_CONSTANTS.LIBDIR}/llmdocchat.js`);
 const chatsessionmod = require(`${NEURANET_CONSTANTS.LIBDIR}/chatsession.js`);
 const llmflowrunner = require(`${NEURANET_CONSTANTS.LIBDIR}/llmflowrunner.js`);
+const pluginhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/pluginhandler.js`);
 const langdetector = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/langdetector.js`);
 
 const REASONS = llmflowrunner.REASONS;
@@ -70,6 +70,7 @@ exports.answer = async (params) => {
 	
 	const {sessionID} = chatsessionmod.getUsersChatSession(id, params_session_id);
 
+	const llmdocchat = pluginhandler.getPlugin("llmdocchat");
 	let filesForPrompt = await llmdocchat.getFilesForPrompt(params.files);
 	
 	const languageDetectedForQuestion =  langdetector.getISOLang(params.question);
