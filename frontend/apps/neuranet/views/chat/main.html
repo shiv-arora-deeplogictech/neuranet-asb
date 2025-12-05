@@ -7,5 +7,5 @@ chat-box#generalchat {
 <chat-box id="generalchat" chatapi="{{APP_CONSTANTS.API_PATH}}/{{aiendpoint}}"
     attach="true" attachaccepts=".txt,.docx,.pdf,.xlsx" maxattachsize="4194304" maxattachsizeerror="{{i18n.MaxSizeError}}"
     maxattachments="4" maxattachmentserror="{{i18n.MaxAttachmentsError}}"
-    tts="{{{tts_flag}}}" stt="{{{stt_flag}}}"
+    tts="{{{tts_flag}}}" stt="{{{stt_flag}}}" typewriter="{{{typewriter}}}"
     onrequest="window.monkshu_env.apps[APP_CONSTANTS.APP_NAME].chat_main.getAssistantResult(prompt, files, message_id, chatbox, '{{{activeaiapp.id}}}')"></chat-box>

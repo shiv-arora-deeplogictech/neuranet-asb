@@ -26,6 +26,8 @@ async function elementConnected(host) {
 	chat_box.setDataByHost(host, {COMPONENT_PATH, ATTACHMENT_ALLOWED: ATTACHMENT_ALLOWED?"true":undefined, 
         STT: stt_flag?"true":undefined, TTS: tts_flag?"true":undefined });
     const memory = chat_box.getMemoryByHost(host); memory.FILES_ATTACHED = [];
+    const typewriter = host.getAttribute("typewriter");
+    memory.typewriter = typewriter ? (typewriter.toLowerCase() == "false" ? false : parseInt(host.getAttribute("typewriter"))) : false;
     MUSTACHE = await router.getMustache();
 }
 
@@ -54,8 +56,8 @@ async function send(containedElement) {
     // send the message to the backend to get a response
     const onRequest = host.getAttribute("onrequest"); 
     const wrappedChatBox = {
-        insertAIResponse: (processedResult, message_id) => {
-            _insertAIResponse(shadowRoot, processedResult[processedResult.ok?"response":"error"], processedResult.mime, message_id);
+        insertAIResponse: async (processedResult, message_id) => {
+            await _insertAIResponse(shadowRoot, processedResult[processedResult.ok?"response":"error"], processedResult.mime, message_id);
             if (!processedResult.ok) {  // sending more messages is now disabled as this chat is dead due to error
                 buttonSendImg.onclick = ''; buttonSendImg.src = `${COMPONENT_PATH}/img/senddisabled.svg`;
             } else { // enable sending more messages
@@ -178,10 +180,14 @@ async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/mar
     // insert current prompt and/or reply
     const insertion = shadowRoot.querySelector(`div.insertiondiv#c${message_id}`);
     if (!insertion) return;
+    const chatScroller = shadowRoot.querySelector("div#chatscroller");
+    const memory = chat_box.getMemoryByContainedElement(insertion), typewriter = memory.typewriter;
     const elementAIResponse = insertion.querySelector("span.airesponse"); 
     const htmlContent = aiReponseMime=="text/markdown" ? _latexedMarkdownToHTML(aiResponse): aiResponse;
     const insertionTemplate = shadowRoot.querySelector("template#chatresponse_insertion_template").content.cloneNode(true);   
-    elementAIResponse.innerHTML = htmlContent + insertionTemplate.querySelector("span.controls").outerHTML;
+    if (typewriter) await _typewriterWriteText(elementAIResponse, htmlContent, chatScroller, typewriter); 
+    else elementAIResponse.innerHTML=htmlContent;
+    elementAIResponse.innerHTML += insertionTemplate.querySelector("span.controls").outerHTML;
     elementAIResponse.dataset.content = `<!doctype html>\n${htmlContent}\n</html>`;
     elementAIResponse.dataset.content_mime = "text/html";
     elementAIResponse.dataset.originalcontent = aiResponse;
@@ -197,7 +203,6 @@ async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/mar
     }
 
     // scroll to the bottom
-    const chatScroller = shadowRoot.querySelector("div#chatscroller");
     chatScroller.scrollTop = chatScroller.scrollHeight;
 
     // forget attached files
@@ -225,6 +230,31 @@ function _latexedMarkdownToHTML(text) {
         LOG.error(`Markdown conversion error: ${err}, returning original text`);
         return text;
     }
+}
+
+async function _typewriterWriteText(element, html, scroller, delay=10) {  // AI generated using stack overflow AI, then manually recoded
+    const _sleep = ms => new Promise(r => setTimeout(r, ms));
+    async function _revealNode(node, parent) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            // create a live text node and append characters to it
+            const typewriterTextNode = document.createTextNode('');
+            parent.appendChild(typewriterTextNode);
+            for (let i = 0; i < node.data.length; i++) {
+                typewriterTextNode.data += node.data[i];
+                await _sleep(delay);
+            }
+            scroller.scrollTop = scroller.scrollHeight; // auto scroll to show new content
+        } else if (node.nodeType === Node.ELEMENT_NODE) {       // ignore other node types (comments, etc.)
+            // create element shell (without children) so styling/structure is present immediately
+            const el = document.createElement(node.tagName);
+            for (const attr of node.attributes) el.setAttribute(attr.name, attr.value); // copy attributes
+            parent.appendChild(el);
+            for (const child of node.childNodes) await _revealNode(child, el); // reveal children into the new element
+        }
+    }
+
+    const dummyTemplate = document.createElement("template"); dummyTemplate.innerHTML = html;
+    element.innerHTML = ""; for (const child of dummyTemplate.content.childNodes) await _revealNode(child, element);
 }
 
 const _getMemory = containedElement => chat_box.getMemoryByContainedElement(containedElement);

@@ -27,6 +27,7 @@ function initView(data) {
     data.icons_refresh = `${MODULE_PATH}/../img/newchat`;
     data.tts_flag = data.activeaiapp.interface.tts == true ? "true" : "false";
     data.stt_flag = data.activeaiapp.interface.stt == true ? "true" : "false";
+    data.typewriter = data.activeaiapp.interface.typewriter ? data.activeaiapp.interface.typewriter : undefined;
     setupSSEEvents();
 }
 
