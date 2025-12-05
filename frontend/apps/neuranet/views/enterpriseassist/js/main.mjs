@@ -76,7 +76,7 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     }
 
     chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
-    setTimeout(_=>delete thoughtSubscribers[message_id], 1000);  // response is final, thoughts can't be updated anymore
+    setTimeout(_=>delete thoughtSubscribers[message_id], 2000);  // response is final, thoughts can't be updated anymore
 }
 
 function setupSSEEvents() {

@@ -301,6 +301,16 @@ div.showingbutton::after {content: "  ⇱"; font-size: 1.5em;}
 
 div.collapsiblecontent {max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out;}
 
+div.thought {
+    background: #f9fcff;
+    margin: 1.5em;
+    font-size: smaller;
+    border-radius: 1em;
+    padding: 1em 2em;
+    color: #007eb4;
+    border: 1px solid #d1e7fb;
+}
+
 .rollinghighlight {
   display: inline-block;
   /* Render text through the gradient */
@@ -381,7 +391,9 @@ div.collapsiblecontent {max-height: 0; overflow: hidden; transition: max-height 
                     if (element.classList.contains('showingbutton')) contentDiv.style.maxHeight = contentDiv.scrollHeight+'px';
                     else contentDiv.style.maxHeight = '0px';
                 })(this);">{{i18n.ChatThinkingLabel}}</div>
-            <div class="collapsiblecontent" id="aithoughtcontent"><!-- thoughts content --></div>
+            <div class="collapsiblecontent" id="aithoughtcontent">
+                <div class="thought"></div>
+            </div>
         </div>
         <span class="airesponse"><img class="waitspin" src="{{{COMPONENT_PATH}}}/img/chatspin.svg"></span>
     </span>
