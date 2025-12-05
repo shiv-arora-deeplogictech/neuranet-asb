@@ -9,6 +9,7 @@
  */
 
 import katex from "./3p/katex-0.16.min.mjs";
+import {i18n} from "/framework/js/i18n.mjs";
 import {util} from "/framework/js/util.mjs";
 import {marked} from "./3p/marked.esm.min.js";
 import {router} from "/framework/js/router.mjs";
@@ -63,8 +64,9 @@ async function send(containedElement) {
                 userMessageArea.readOnly = false;
             }   
         },
-        getCollapsibleSection: (title, content) => _getCollapsibleSection(shadowRoot, title, content),
-        getAIContent: message_id => _getAIResponseContent(shadowRoot, message_id)
+        insertAIThoughts: (thoughts, thoughts_mime, message_id) => _insertAIThoughts(shadowRoot, thoughts, thoughts_mime, message_id),
+        getCollapsibleSection: (title, content) => _getCollapsibleSection(containedElement, title, content),
+        getAIContent: message_id => _getAIResponseContent(shadowRoot, message_id)||""
     }
     const requestProcessor = util.createAsyncFunction(`return await ${onRequest};`);
     requestProcessor({chatbox: wrappedChatBox, message_id, prompt: userPrompt, files: _getMemory(containedElement).FILES_ATTACHED});
@@ -105,8 +107,8 @@ async function detach(containedElement, fileid) {
 async function saveAsWord(containedElement, airesponse_element_id) {
     const shadowRoot = chat_box.getShadowRootByContainedElement(containedElement);
     const elementAIResponse = shadowRoot.querySelector(`span.airesponse#${airesponse_element_id}`); 
-    if ((!elementAIResponse) || (elementAIResponse.dataset.originalmime != "text/markdown") || 
-        (elementAIResponse.dataset.originalcontent_mime != "text/plain")) return; // we can't convert anything other than MD or plain text
+    if ((!elementAIResponse) || ((elementAIResponse.dataset.originalcontent_mime != "text/markdown") && 
+        (elementAIResponse.dataset.originalcontent_mime != "text/plain"))) return; // we can't convert anything other than MD or plain text
     
     try {
         const mdContentWithHTML = elementAIResponse.dataset.originalcontent;
@@ -120,14 +122,6 @@ async function saveAsWord(containedElement, airesponse_element_id) {
     } catch (err) {
         LOG.error(err);
     }
-}
-
-async function startVoiceInput(containedElement) {
-    LOG.info("STT: Triggered"); // to do: use Web Speech API here not a call to backend
-}
-
-async function playTTS(containedElement) {
-    LOG.info("TTS: Triggered"); // to do: use Web Speech API here not a call to backend
 }
 
 function _getCollapsibleSection(shadowRoot, title, content) {
@@ -146,7 +140,7 @@ function _detachAllFiles(shadowRoot, clearAttachedFileMemory) {
 function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     const insertionTemplate = shadowRoot.querySelector("template#chatresponse_insertion_template").content.cloneNode(true);   
     const insertion = insertionTemplate.querySelector("div.insertiondiv"); insertion.id = `c${message_id}`; 
-    const elementUserprompt = insertion.querySelector("span.userprompt"); elementUserprompt.id = `c${message_id}`; 
+    const elementUserprompt = insertion.querySelector("span.userprompt"); 
     elementUserprompt.innerHTML = userPrompt;
     shadowRoot.querySelector("div#chatmainarea").appendChild(insertion);
 
@@ -165,11 +159,23 @@ function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     _detachAllFiles(shadowRoot, false);  // clear file attachments
 }
 
-function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/markdown", message_id) {
+function _insertAIThoughts(shadowRoot, thoughts, thoughts_mime="text/markdown", message_id) {
+    const insertion = shadowRoot.querySelector(`div.insertiondiv#c${message_id}`);
+    if (!insertion) return;
+    const elementCollapsibleContainer = insertion.querySelector("div.collapsiblecontainer#aithoughtsection");
+    elementCollapsibleContainer.classList.add("visible");
+    const elementAIThoughts = insertion.querySelector("div.collapsiblecontent#aithoughtcontent"); 
+    const htmlContent = thoughts_mime=="text/markdown" ? _latexedMarkdownToHTML(thoughts): thoughts;
+    elementAIThoughts.innerHTML = htmlContent;
+    const chatScroller = shadowRoot.querySelector("div#chatscroller");
+    chatScroller.scrollTop = chatScroller.scrollHeight;
+}
+
+async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/markdown", message_id) {
     // insert current prompt and/or reply
     const insertion = shadowRoot.querySelector(`div.insertiondiv#c${message_id}`);
     if (!insertion) return;
-    const elementAIResponse = insertion.querySelector("span.airesponse"); elementAIResponse.id = `c${message_id}`;
+    const elementAIResponse = insertion.querySelector("span.airesponse"); 
     const htmlContent = aiReponseMime=="text/markdown" ? _latexedMarkdownToHTML(aiResponse): aiResponse;
     const insertionTemplate = shadowRoot.querySelector("template#chatresponse_insertion_template").content.cloneNode(true);   
     elementAIResponse.innerHTML = htmlContent + insertionTemplate.querySelector("span.controls").outerHTML;
@@ -179,6 +185,13 @@ function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/markdown"
     elementAIResponse.dataset.originalcontent_mime = aiReponseMime;
     const elementControlsWord = insertion.querySelector("img#controlsword");
     if (aiReponseMime.toLowerCase() == "text/markdown") elementControlsWord.classList.remove("hidden");
+
+    // we are no longer thinking, so the label should now be thoughts, not thinking
+    const elementThinkingSectionHeaderElement = insertion.querySelector("div#aithoughtsection div.collapsiblebutton");
+    if (elementThinkingSectionHeaderElement) {
+        elementThinkingSectionHeaderElement.innerHTML = await i18n.get("ChatThoughtsLabel");
+        elementThinkingSectionHeaderElement.classList.remove("rollinghighlight");
+    }
 
     // scroll to the bottom
     const chatScroller = shadowRoot.querySelector("div#chatscroller");
@@ -214,5 +227,5 @@ function _latexedMarkdownToHTML(text) {
 const _getMemory = containedElement => chat_box.getMemoryByContainedElement(containedElement);
 
 export const chat_box = {trueWebComponentMode: true, elementConnected, elementRendered, send, attach, 
-    detach, saveAsWord, startVoiceInput, playTTS}
+    detach, saveAsWord, startVoiceInput:(()=>{})(), playTTS: (()=>{})()}
 monkshu_component.register("chat-box", `${COMPONENT_PATH}/chat-box.html`, chat_box);

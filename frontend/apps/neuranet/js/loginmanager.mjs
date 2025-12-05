@@ -70,8 +70,6 @@ function startAutoLogoutTimer() {
     resetTimer();   // start the timing
 }
 
-const interceptPageLoad = _ => router.addOnLoadPage("*", startAutoLogoutTimer); 
-
 const interceptPageLoadData = _ => {
     $$.librouter.addOnLoadPageData(APP_CONSTANTS.LOGIN_HTML, async (data, _url) => {
 	    data.LOGIN_API_KEY = apiman.getAPIKeyFor(`${APP_CONSTANTS.API_PATH}}/login`); });
@@ -87,4 +85,4 @@ const _stopAutoLogoutTimer = _ => {
 }
 
 export const loginmanager = {handleLoginResult, logout, startAutoLogoutTimer, addLogoutListener, getSessionUser, 
-    interceptPageLoad, isAdmin, interceptPageLoadData};
+    isAdmin, interceptPageLoadData};

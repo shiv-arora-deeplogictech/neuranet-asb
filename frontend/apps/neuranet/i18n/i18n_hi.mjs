@@ -27,6 +27,8 @@ export const i18n = {
 "Multiline": "Multiline",
 "MaxSizeError": "Please attach a file smaller than 4 MB",
 "MaxAttachmentsError": "Maximum of 4 files can be attached.",
+"ChatThinkingLabel": "Thinking...",
+"ChatThoughtsLabel": "Thoughts",
 
 "ViewLabel_gencode": "Generate Code",
 "ViewLabel_enterpriseassist": "Enterprise Assistant",

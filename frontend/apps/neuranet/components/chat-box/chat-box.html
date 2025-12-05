@@ -178,11 +178,15 @@ span#messagecontrols span#attachedfiles span.fileicon img#cross {
     visibility: hidden;
 }
 
-span.usercontentholder, span.aicontentholder {
+span.usercontentholder {
     display: flex;
     flex-direction: row;
+    justify-content: end;
 }
-span.usercontentholder {justify-content: end;}
+span.aicontentholder {
+    display: flex;
+    flex-direction: column;
+}
 span.aicontentholder:hover span.controls {visibility: visible;}
 span.aicontentholder img.controls {
     width: 0.8em;
@@ -279,20 +283,40 @@ span.airesponse pre {
 }
 
 div.collapsiblecontainer {
-    background-color: #f4f1f1;
+    background: linear-gradient(to right, #dff0fe, transparent);
     padding: 0.2em 0.4em 0.4em 0.4em;
     border-radius: 0.5em;
+    display: none;
 }
+div.collapsiblecontainer.visible {display: block !important;}
 div.collapsiblebutton, div.showingbutton {
     font-size: smaller;
     align-items: center;
     height: 2em;
     cursor: pointer;
+    color: 005C84;
 }
 div.collapsiblebutton::after {content: "  ⇲"; font-size: 1.5em;}
 div.showingbutton::after {content: "  ⇱"; font-size: 1.5em;}
 
 div.collapsiblecontent {max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out;}
+
+.rollinghighlight {
+  display: inline-block;
+  /* Render text through the gradient */
+  color: transparent !important;
+  background: linear-gradient(90deg,#005C84 0%,#dff0fe 50%,#005C84 100%);
+  /* Control how *narrow* the shine is → looks character-by-character */
+  background-size: 60% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* How fast or slow the animation is */
+  animation: roll 2s linear infinite;
+}
+@keyframes roll {
+  0% {background-position: -20% 0;}
+  100% {background-position: 120% 0;}
+}
 </style>
 {{{APP_CONSTANTS.MOBILE_MEDIA_QUERY_PORTRAIT_START}}}
     div#body {padding: 1em 0.5em 1em 0.5em;}
@@ -312,7 +336,9 @@ div.collapsiblecontent {max-height: 0; overflow: hidden; transition: max-height 
 
 <div id="chat">
     <div id="chatscroller" class="hidden">
-    <div id="chatmainarea" readonly></div>
+        <div id="chatmainarea" readonly>
+        <!-- Chat questions and responses are inserted here -->
+        </div>
     </div>
 
     <div id="start" class="visible"><img id="mainimage" src="{{{COMPONENT_PATH}}}/img/robot.svg"></div>
@@ -335,60 +361,76 @@ div.collapsiblecontent {max-height: 0; overflow: hidden; transition: max-height 
 </div>
 </div>
 
-<template id="chatresponse_insertion_template">
-    <div class="insertiondiv">
+</div>  <!-- end of body div -->
+
+
+<!-- Templates start -->
+
+<!-- Chat question and response insertion template -->
+<template id="chatresponse_insertion_template"> 
+<div class="insertiondiv" id="cmessage_id">
     <span class="usercontentholder"> 
         <span class="userprompt"></span> 
     </span>
     <span class="aicontentholder">
+        <div class="collapsiblecontainer" id="aithoughtsection">
+            <div class="collapsiblebutton rollinghighlight" onclick="
+                (function(element){
+                    element.classList.toggle('showingbutton');
+                    const contentDiv = element.nextElementSibling;
+                    if (element.classList.contains('showingbutton')) contentDiv.style.maxHeight = contentDiv.scrollHeight+'px';
+                    else contentDiv.style.maxHeight = '0px';
+                })(this);">{{i18n.ChatThinkingLabel}}</div>
+            <div class="collapsiblecontent" id="aithoughtcontent"><!-- thoughts content --></div>
+        </div>
         <span class="airesponse"><img class="waitspin" src="{{{COMPONENT_PATH}}}/img/chatspin.svg"></span>
     </span>
-    </div>
-    <span class="controls">
-        <img class="controls" src="{{{COMPONENT_PATH}}}/img/copy.svg" id="controlscopy"
-            onclick="
-                const spanAIResponse1 = this.parentNode.parentNode;
-                $$.copyTextToClipboard(spanAIResponse1.dataset.content, spanAIResponse1.dataset.content_mime); 
-                this.src='{{{COMPONENT_PATH}}}/img/tick.svg'; 
-                setTimeout(_=>this.src='{{{COMPONENT_PATH}}}/img/copy.svg', 800)">
-        <img class="controls" src="{{{COMPONENT_PATH}}}/img/save.svg" id="controlssave"
-            onclick="
-                const spanAIResponse2 = this.parentNode.parentNode;
-                window.monkshu_env.frameworklibs.util.downloadFile(
-                    spanAIResponse2.dataset.content, 
-                    spanAIResponse2.dataset.content_mime, 
-                    `chat_${new Date(Date.now()).toLocaleString().replaceAll(' ', '_').replaceAll(',', '')}.html`)">
-        <img class="controls hidden" src="{{{COMPONENT_PATH}}}/img/word.svg" id="controlsword"
-            onclick="monkshu_env.components['chat-box'].saveAsWord(this, this.parentNode.parentNode.id)">
-        {{#STT}}<img class="controls" src="{{{COMPONENT_PATH}}}/img/speaker.svg" title="Play Audio" ttsAPI="/apps/{{app}}/tts"
-                onclick="monkshu_env.components['chat-box'].playTTS(this)">{{/STT}}
-    </span>
+</div>
+<span class="controls">
+    <img class="controls" src="{{{COMPONENT_PATH}}}/img/copy.svg" id="controlscopy"
+        onclick="
+            const spanAIResponse1 = this.parentNode.parentNode;
+            $$.copyTextToClipboard(spanAIResponse1.dataset.content, spanAIResponse1.dataset.content_mime); 
+            this.src='{{{COMPONENT_PATH}}}/img/tick.svg'; 
+            setTimeout(_=>this.src='{{{COMPONENT_PATH}}}/img/copy.svg', 800)">
+    <img class="controls" src="{{{COMPONENT_PATH}}}/img/save.svg" id="controlssave"
+        onclick="
+            const spanAIResponse2 = this.parentNode.parentNode;
+            window.monkshu_env.frameworklibs.util.downloadFile(
+                spanAIResponse2.dataset.content, 
+                spanAIResponse2.dataset.content_mime, 
+                `chat_${new Date(Date.now()).toLocaleString().replaceAll(' ', '_').replaceAll(',', '')}.html`)">
+    <img class="controls hidden" src="{{{COMPONENT_PATH}}}/img/word.svg" id="controlsword"
+        onclick="monkshu_env.components['chat-box'].saveAsWord(this, this.parentNode.parentNode.id)">
+    {{#STT}}<img class="controls" src="{{{COMPONENT_PATH}}}/img/speaker.svg" title="Play Audio" ttsAPI="/apps/{{app}}/tts"
+            onclick="monkshu_env.components['chat-box'].playTTS(this)">{{/STT}}
+</span>
 </template>
 
+<!-- File attachment template -->
 <template id="fileattachment_insertion_template">
-    <span class="fileicon" id="&#123;&#123;&#123;fileid&#125;&#125;&#125;" 
-            onmouseover="this.querySelector('img#cross').style.visibility='visible'"
-            onmouseleave="this.querySelector('img#cross').style.visibility='hidden'">
-        <img id="fileicon" src="{{{COMPONENT_PATH}}}/img/file.svg">
-        <span id="name">&#123;&#123;filename&#125;&#125;</span>
-        <img id="cross" src="{{{COMPONENT_PATH}}}/img/cross.svg" 
-            onclick="monkshu_env.components['chat-box'].detach(this, '&#123;&#123;&#123;fileid&#125;&#125;&#125;')">
-    </span>
+<span class="fileicon" id="&#123;&#123;&#123;fileid&#125;&#125;&#125;" 
+        onmouseover="this.querySelector('img#cross').style.visibility='visible'"
+        onmouseleave="this.querySelector('img#cross').style.visibility='hidden'">
+    <img id="fileicon" src="{{{COMPONENT_PATH}}}/img/file.svg">
+    <span id="name">&#123;&#123;filename&#125;&#125;</span>
+    <img id="cross" src="{{{COMPONENT_PATH}}}/img/cross.svg" 
+        onclick="monkshu_env.components['chat-box'].detach(this, '&#123;&#123;&#123;fileid&#125;&#125;&#125;')">
+</span>
 </template>
 
+
+<!-- Collapsible content section template -->
 <template id="collapsible_content_template"> <!-- Marked will break parsing if it detects 4 spaces, so the template below is very particular -->
-<div class="collapsiblecontainer">
+<div class="collapsiblecontainer" id="aireponsesection">
 <div class="collapsiblebutton" onclick="
-  this.classList.toggle('showingbutton');
-  const contentDiv = this.nextElementSibling;
-  if (this.classList.contains('showingbutton')) contentDiv.style.maxHeight = contentDiv.scrollHeight+'px';
-  else contentDiv.style.maxHeight = '0px';
-">&#123;&#123;&#123;title&#125;&#125;&#125;</div>
+  (function(element){element.classList.toggle('showingbutton');
+  const contentDiv = element.nextElementSibling;
+  if (element.classList.contains('showingbutton')) contentDiv.style.maxHeight = contentDiv.scrollHeight+'px';
+  else contentDiv.style.maxHeight = '0px';})(this);">&#123;&#123;&#123;title&#125;&#125;&#125;</div>
 <div class="collapsiblecontent">
 
 &#123;&#123;&#123;content&#125;&#125;&#125;
 </div>
 </div>
 </template>
-
-</div>

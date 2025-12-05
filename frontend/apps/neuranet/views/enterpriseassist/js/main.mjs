@@ -13,7 +13,7 @@ import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
 const API_SSE_EVENTS = "sseevents", NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts";
 
-let chatsessionID, notification_events, thought_events, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT;
+let chatsessionID, notification_events, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT;
 
 function initView(data) {
     const loginresponse = session.get(APP_CONSTANTS.LOGIN_RESPONSE);    
@@ -47,11 +47,8 @@ async function getNotifications() {
 async function getAssistantResult(question, files, message_id, chatbox, aiappid) {
     const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
         question, session_id: chatsessionID, aiappid, files, message_id};
-    thoughtSubscribers[message_id] = async thought => { // update chat with thoughts of the model while producing the final response
-        const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("EnterpriseAssistThoughtsLabel"), thought);
-        const newResponse = chatbox.getAIContent(message_id)+collapsibleSection;
-        chatbox.insertAIResponse({ok: true, response: newResponse, mime: "text/markdown"}, message_id);
-    }
+    thoughtSubscribers[message_id] = async thoughts =>  // update chat with thoughts of the model while producing the final response
+        chatbox.insertAIThoughts(thoughts.join("\n\n"), "text/markdown", message_id);
     const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", request, true);
     if (result.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
 
@@ -69,17 +66,17 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     // coming here means we have a good response with no errors
     const references=[]; for (const metadata of result.metadatas) if (!references.includes(
         decodeURIComponent(metadata.referencelink))) references.push(decodeURIComponent(metadata.referencelink));
-    let resultFinal = (await router.getMustache()).render(await i18n.get("EnterpriseAssist_ResponseTemplate"), 
+    let resultRendered = (await router.getMustache()).render(await i18n.get("EnterpriseAssist_ResponseTemplate"), 
         {response: result.response, references});
     // add collapsible section for internal code etc
     if (result.jsonResponse && result.jsonResponse.analysis_code) {
         const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("EnterpriseAssistAnalysisLabel"), 
             `\`\`\`${result.jsonResponse.code_language.toLowerCase()}\n${result.jsonResponse.analysis_code}\n\`\`\`\n`);
-        resultFinal = chatbox.getAIContent(message_id) + collapsibleSection + resultFinal;  // keep the thoughts alive, by appending to any existing thoughts, the final response
+        resultRendered = collapsibleSection + resultRendered;  
     }
 
-    chatbox.insertAIResponse({ok: true, response: resultFinal, mime: "text/markdown"}, message_id);
-    delete thoughtSubscribers[message_id];  // response is not final, thoughts can't be updated anymore
+    chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
+    setTimeout(_=>delete thoughtSubscribers[message_id], 1000);  // response is final, thoughts can't be updated anymore
 }
 
 function setupSSEEvents() {
@@ -91,10 +88,12 @@ function setupSSEEvents() {
     });
     sse.addEventListener(NN_THOUGHTS_EVENT_NAME, event => {
         try {
-            const oldThoughts = thought_events;
-            thought_events = event.data;
-            if (oldThoughts != thought_events) _newThoughtsDetected(JSON.parse(oldThoughts), JSON.parse(thought_events));
-        } catch (err) {LOG.error(`Error parsing thought events`);}
+            const thought_events = JSON.parse(event.data).events;
+            if (!util.areObjectsEqual(old_thoughts, thought_events)) {
+                _newThoughtsDetected(old_thoughts, thought_events);
+                old_thoughts = thought_events;
+            }
+        } catch (err) {LOG.error(`Error parsing thought events, skipping this SSE update.`);}
     });
 }
 
