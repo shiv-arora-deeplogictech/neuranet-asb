@@ -8,6 +8,7 @@ import {i18n} from "/framework/js/i18n.mjs";
 import {util} from "/framework/js/util.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
+const responseparser = (await import (`${APP_CONSTANTS.LIB_PATH}/responseparser.mjs`)).responseparser;
 
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
 const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts";
@@ -41,14 +42,7 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     } 
 
     // coming here means we have a good response with no errors
-    let resultRendered = result.response;
-    // add collapsible section for internal code etc
-    if (result.jsonResponse && result.jsonResponse.analysis_code) {
-        const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("EnterpriseAssistAnalysisLabel"), 
-            `\`\`\`${result.jsonResponse.code_language.toLowerCase()}\n${result.jsonResponse.analysis_code}\n\`\`\`\n`);
-        resultRendered = collapsibleSection + resultRendered;  
-    }
-
+    const resultRendered = await responseparser.parseAIResponse(result, chatbox); 
     chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
     setTimeout(_=>delete thoughtSubscribers[message_id], 2000);  // response is final, thoughts can't be updated anymore
 }

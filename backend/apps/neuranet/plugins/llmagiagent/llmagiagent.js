@@ -83,13 +83,14 @@ exports.answer = async params => {
 	}
 	if (retries >= 3) stepAnswer = await _doFailedResponse(params, stepAnswer);
 	
+	if (!stepAnswer.jsonResponse) stepAnswer.jsonResponse = {response: stepAnswer.response};	// we always return rich response
 	return stepAnswer;
 }
 
 async function _doFailedResponse(params, stepAnswer) {
 	const llmerrorMessage = await simplellm.prompt_answer(params.prompt_code_retry_exceeded, 
 		params.id, params.org, params.aiappid, {question: params.question}, params["model-simplellm"].name);
-	return {...stepAnswer, response: llmerrorMessage, jsonResponse: undefined};
+	return {...stepAnswer, response: llmerrorMessage};
 }
 
 async function _compiles(code) {
@@ -161,7 +162,8 @@ function _extractPythonCode(params, text) {
 			if ((keywordsFoundInTheLine > keywordsToWordsInLineThreshold) && (!thisLineAdded)) {
 				pythonCodeLikeLines++; thisLineAdded = true; code += `${line}\n`;
 			}
-      if ((!thisLineAdded) && regex2.test(line.trim())) {pythonCodeLikeLines++; thisLineAdded = true; code += `${line}\n`;};
+      		if ((!thisLineAdded) && regex2.test(line.trim())) {
+				pythonCodeLikeLines++; thisLineAdded = true; code += `${line}\n`; };
 		}
 	}
 

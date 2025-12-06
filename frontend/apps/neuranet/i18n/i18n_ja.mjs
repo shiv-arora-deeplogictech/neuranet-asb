@@ -30,6 +30,9 @@ export const i18n = {
 "ChatThinkingLabel": "Thinking...",
 "ChatThoughtsLabel": "Thoughts",
 
+"AIResponseAnalysisLabel": "Analysis",
+"AIResponseTemplate": "{{{response}}}\n\n<span id='aireferences' style='font-size: x-small; line-height: 1.2em;'><span style='font-style: italic'>References</span><br/>\n{{#references}}{{.}}<br/>\n{{/references}}<span>",
+
 "ViewLabel_gencode": "Generate Code",
 "ViewLabel_enterpriseassist": "Enterprise Assistant",
 "ViewLabel_sqltranslate": "Translate SQL",
@@ -46,11 +49,9 @@ export const i18n = {
 "EnterpriseAssist_Done": "Done",
 "EnterpriseAssist_Processing": "Reading",
 "EnterpriseAssist_NoEvents": "No Events.",
-"EnterpriseAssistAnalysisLabel": "Analysis",
 "EnterpriseAssist_KnowledgeBase": "AI Training",
 "EnterpriseAssist_ErrorNoKnowledge": "Sorry I have no knowledge of this topic.",
 "EnterpriseAssist_AIError": "AI error in processing. Please reload the page to start a new assistant request.",
-"EnterpriseAssist_ResponseTemplate": "{{{response}}}\n\n<span id='aireferences' style='font-size: x-small; line-height: 1.2em;'><span style='font-style: italic'>References</span><br/>\n{{#references}}{{.}}<br/>\n{{/references}}<span>",
 
 "AIWorkshop_Title": "AI Workshop",
 "AIWorkshop_Subtitle_EditApp": "Editing {{{aiappid}}}",

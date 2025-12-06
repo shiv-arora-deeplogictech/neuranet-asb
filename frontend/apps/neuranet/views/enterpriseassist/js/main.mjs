@@ -9,6 +9,7 @@ import {util} from "/framework/js/util.mjs";
 import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
+const responseparser = (await import (`${APP_CONSTANTS.LIB_PATH}/responseparser.mjs`)).responseparser;
 
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
 const API_SSE_EVENTS = "sseevents", NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts";
@@ -65,17 +66,7 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     if (!result.metadatas) {doErrorResult(await i18n.get("EnterpriseAssist_ErrorNoKnowledge")); return} 
 
     // coming here means we have a good response with no errors
-    const references=[]; for (const metadata of result.metadatas) if (!references.includes(
-        decodeURIComponent(metadata.referencelink))) references.push(decodeURIComponent(metadata.referencelink));
-    let resultRendered = (await router.getMustache()).render(await i18n.get("EnterpriseAssist_ResponseTemplate"), 
-        {response: result.response, references});
-    // add collapsible section for internal code etc
-    if (result.jsonResponse && result.jsonResponse.analysis_code) {
-        const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("EnterpriseAssistAnalysisLabel"), 
-            `\`\`\`${result.jsonResponse.code_language.toLowerCase()}\n${result.jsonResponse.analysis_code}\n\`\`\`\n`);
-        resultRendered = collapsibleSection + resultRendered;  
-    }
-
+    const resultRendered = await responseparser.parseAIResponse(result, chatbox);
     chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
     setTimeout(_=>delete thoughtSubscribers[message_id], 2000);  // response is final, thoughts can't be updated anymore
 }
