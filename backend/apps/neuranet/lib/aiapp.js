@@ -6,16 +6,28 @@
  */
 
 const yaml = require("yaml");
+const path = require("path");
 const fspromises = require("fs").promises;
 const serverutils = require(`${CONSTANTS.LIBDIR}/utils.js`);
+const timedcache = require(`${CONSTANTS.LIBDIR}/timedcache.js`);
 const aiutils = require(`${NEURANET_CONSTANTS.LIBDIR}/aiutils.js`);
 const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
 const brainhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/brainhandler.js`);
 
-const APP_CACHE = {}, FLOWSECTION_CACHE = {}, DEBUG_MODE = NEURANET_CONSTANTS.CONF.debug_mode;
+const APP_CACHE = {}, FLOWSECTION_CACHE = {}, DEBUG_MODE = NEURANET_CONSTANTS.CONF.debug_mode, TIMED_CACHE = timedcache.newcache(300000);
+const BB_MESSAGE_KEY_PUBLISH = "_org_neuranet_aiapp_op_publish", BB_MESSAGE_KEY_UNPUBLISH = "_org_neuranet_aiapp_op_unpublish";
+const CUSTOM_VIEW_PATH = "views/custom", XBIN_IGNORE_EXTENSION = "._____________xbin__________ignore_stats";
 
 exports.DEFAULT_ENTRY_FUNCTIONS = {llm_flow: "answer", pregen_flow: "generate"};
 exports.AIAPP_STATUS = {PUBLISHED: "published", UNPUBLISHED: "unpublished"};
+
+exports.initSync = _ => {
+    const sendToIfNotSeen = (msg, functionTo, args) => {    // avoid duplicate messages if the cluster is misconfigured etc.
+        if (!TIMED_CACHE[msg.opid]) {TIMED_CACHE[msg.opid]=true; functionTo(...args);}
+    }
+    BLACKBOARD.subscribe(BB_MESSAGE_KEY_PUBLISH, message => sendToIfNotSeen(message, _pushAIAppViewForOrg, [message.id, message.org, message.aiappid, message.frontend_relative_webroot]));
+    BLACKBOARD.subscribe(BB_MESSAGE_KEY_UNPUBLISH, message => sendToIfNotSeen(message, _deleteAIAppViewForOrg, [message.id, message.org, message.aiappid, message.frontend_relative_webroot]));
+}
 
 /**
  * Returns the flow object of the YAML file for the given ai application
@@ -77,7 +89,7 @@ exports.getAIApp = async function(id, org, aiappid, forcecache) {
         return APP_CACHE[appCacheKey];
     } catch (err) { // app file parsing issue
         if (!NEURANET_CONSTANTS.CONF.dynamic_aiapps) {  // dynamic apps not supported, we can't do anything else
-            LOG.error(`AI app parsing error for ID ${aiappid} for org ${org}.`);
+            LOG.error(`AI app parsing error for app ID ${aiappid} for org ${org}.`);
             throw err; 
         }
 
@@ -252,7 +264,7 @@ exports.initNewAIAppForOrg = async function(aiappid, label, id, org, template=NE
  * @param {string} org The org
  * @returns true on success or false on failure
  */
-exports.deleteAIAppForOrg = async function (aiappid, id, org) {
+exports.deleteAIAppForOrg = async function (aiappid, id, org, frontend_relative_webroot) {
     const appDir = exports.getAppDir(id, org, aiappid);
     aiappid = aiappid.toLowerCase(); org = org.toLowerCase();
     const aidbfs = require(`${NEURANET_CONSTANTS.LIBDIR}/aidbfs.js`);   // avoid cyclic requires
@@ -264,6 +276,7 @@ exports.deleteAIAppForOrg = async function (aiappid, id, org) {
         await serverutils.createDirectory(appdbArchiveDirPath);
         await serverutils.zipFolder(appdbFolderPath, zipFilePath);
         await serverutils.rmrf(appdbFolderPath);    // delete trained DBs
+        BLACKBOARD.publish(BB_MESSAGE_KEY_UNPUBLISH, {id, org, aiappid, frontend_relative_webroot});    // delete frontend
         result = await serverutils.rmrf(appDir);    // delete app itself
     } catch (err) {
         LOG.error(`Error deleting AI app for org ${org}: ${err.message}`);
@@ -278,24 +291,52 @@ exports.deleteAIAppForOrg = async function (aiappid, id, org) {
 }
 
 /**
- * Publishes (but doesn't add) the given AI app for the given org.
+ * Checks if the given app is already published.
  * @param {string} aiappid The AI app ID
  * @param {string} org The org
+ * @returns true if it is already published else false
+ */
+exports.isPublished = async function(aiappid, org) {
+    const app = await dblayer.getAIAppForOrg(org, aiappid);
+    if (app) return app.status == exports.AIAPP_STATUS.PUBLISHED; 
+    else return false;
+}
+
+/**
+ * Publishes (but doesn't add) the given AI app for the given org.
+ * @param {string} aiappid The AI app ID
+ * @param {string} id The user ID
+ * @param {string} org The org
+ * @param {string} frontend_relative_webroot The app's webroot relative to the frontend directory
  * @returns true on success or false on failure
  */
-exports.publishAIAppForOrg = async function(aiappid, org) {  
+exports.publishAIAppForOrg = async function(aiappid, id, org, frontend_relative_webroot) { 
     aiappid = aiappid.toLowerCase(); org = org.toLowerCase();
+
+    let timeoutWaitUnpublish = 0;
+    if (await exports.isPublished(aiappid, org)) {
+        await exports.unpublishAIAppForOrg(aiappid, id, org, frontend_relative_webroot); 
+        timeoutWaitUnpublish = NEURANET_CONSTANTS.unpublish_cluster_sync_wait;  // so frontend files are deleted across the cluster
+    }
+
+    const randomID = `${Date.now()}${Math.ceil(Math.random()*10000)}`;
+    setTimeout(_=>BLACKBOARD.publish(BB_MESSAGE_KEY_PUBLISH, {opid: randomID, id, org, aiappid, frontend_relative_webroot}), timeoutWaitUnpublish);
+    
     return await dblayer.addOrUpdateAIAppForOrg(org, aiappid, exports.AIAPP_STATUS.PUBLISHED);
 }
 
 /**
  * Unpublishes (but doesn't delete) the given AI app for the given org.
  * @param {string} aiappid The AI app ID
+ * @param {string} id The user ID
  * @param {string} org The org
+ * @param {string} frontend_relative_webroot The app's webroot relative to the frontend directory
  * @returns true on success or false on failure
  */
-exports.unpublishAIAppForOrg = async function(aiappid, org) {
+exports.unpublishAIAppForOrg = async function(aiappid, id, org, frontend_relative_webroot) {
     aiappid = aiappid.toLowerCase(); org = org.toLowerCase();  
+    const randomID = `${Date.now()}${Math.ceil(Math.random()*10000)}`;
+    BLACKBOARD.publish(BB_MESSAGE_KEY_UNPUBLISH, {opid: randomID, id, org, aiappid, frontend_relative_webroot});
     return await dblayer.addOrUpdateAIAppForOrg(org, aiappid, exports.AIAPP_STATUS.UNPUBLISHED);
 }
 
@@ -361,3 +402,31 @@ exports.getAppID = async function(idIn, orgIn, extraInfo) {
  * @returns AI application file.
  */
 exports.getAppFile = (id, org, aiappid) => `${exports.getAppDir(id, org, aiappid)}/${aiappid}.yaml`;
+
+async function _pushAIAppViewForOrg(id, org, aiappid, frontend_relative_webroot) {
+    const appFrontendDir = path.resolve(`${CONSTANTS.FRONTENDDIR}/${frontend_relative_webroot}`);
+    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${org}/${aiappid}`;
+    const appFrontEndDir = `${exports.getAppDir(id, org, aiappid)}/frontend`;
+    if (!(await serverutils.exists(appFrontEndDir))) return;    // nothing to do
+
+    try {
+        try {await fspromises.mkdir(viewDir, {recursive: true})} catch (err) {if (err.code != "EEXIST") throw err;}
+        const copyPromises = []; for (const fileOrFolder of (await fspromises.readdir(appFrontEndDir)))
+            copyPromises.push(await serverutils.copyFileOrFolder(
+                `${appFrontEndDir}/${fileOrFolder}`, `${viewDir}/${fileOrFolder}`, undefined, undefined, 
+                entry => (!entry.endsWith(XBIN_IGNORE_EXTENSION))));
+        try {await Promise.all(copyPromises); return true} catch (err) {if (err.code != "EEXIST") throw err;}
+    } catch (err) {
+        LOG.error(`Error ${err} copying view to the frontend for for app ID ${aiappid} for org ${org}`);
+        return false;
+    }
+}
+
+async function _deleteAIAppViewForOrg(id, org, aiappid, frontend_relative_webroot) {
+    const appFrontEndDir = `${exports.getAppDir(id, org, aiappid)}/frontend`;
+    if (!(await serverutils.exists(appFrontEndDir))) return;    // nothing to do
+
+    const appFrontendDir = path.resolve(`${CONSTANTS.FRONTENDDIR}/${frontend_relative_webroot}`);
+    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${org}/${aiappid}`;
+    try {serverutils.rmrf(viewDir);} catch (err) {LOG.error(`Error ${err} deleting view from the frontend for for app ID ${aiappid} for org ${org}`)}
+}

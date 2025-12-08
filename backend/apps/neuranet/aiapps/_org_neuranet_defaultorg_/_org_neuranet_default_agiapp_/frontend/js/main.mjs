@@ -1,5 +1,7 @@
 /** 
- * View main module for the Enterprise assistant view.
+ * View main module for the Custom Enterprise assistant view.
+ * This is frontend code as it actually runs under the Neuranet 
+ * frontend once the app is published.
  * 
  * (C) 2023 Tekmonks Corp.
  */
@@ -9,26 +11,26 @@ import {util} from "/framework/js/util.mjs";
 import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
-const responseparser = (await import (`${APP_CONSTANTS.LIB_PATH}/responseparser.mjs`)).responseparser;
 
-const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
 const API_SSE_EVENTS = "sseevents", NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts";
 
-let chatsessionID, notification_events, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT;
+let chatsessionID, notification_events, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
 
-function initView(data) {
-    const loginresponse = session.get(APP_CONSTANTS.LOGIN_RESPONSE);    
-    LOG.info(`The login response object is ${JSON.stringify(loginresponse)}`);
+async function initView(data) {
+    mustache = await router.getMustache();
     window.monkshu_env.apps[APP_CONSTANTS.APP_NAME] = {
-        ...(window.monkshu_env.apps[APP_CONSTANTS.APP_NAME]||{}), enterprise_assist_main: main}; 
+        ...(window.monkshu_env.apps[APP_CONSTANTS.APP_NAME]||{}), custom_enterprise_assist_main: main}; 
     data.VIEW_PATH = data.viewpath;
     VIEW_PATH = data.viewpath;
     AI_ENDPOINT = data.aiendpoint;
     data.shownotifications = {action: "monkshu_env.apps[APP_CONSTANTS.APP_NAME].enterprise_assist_main.getNotifications()"};
-    data.icons_refresh = `${MODULE_PATH}/../img/newchat`;
-    data.tts_flag = data.activeaiapp.interface.tts == true ? "true" : "false";
-    data.stt_flag = data.activeaiapp.interface.stt == true ? "true" : "false";
-    data.typewriter = data.activeaiapp.interface.typewriter ? data.activeaiapp.interface.typewriter : undefined;
+    i18n.addPath(`${VIEW_PATH}`);
+    
+    const starterPrompts = (await i18n.get("CustomEnterpriseAssist_StarterPrompts")).split("|").map(value=>value.trim());
+    const randomPrompt = starterPrompts[Math.floor(Math.random()*starterPrompts.length)];
+    const userfname = session.get(APP_CONSTANTS.USERNAME).toString().split(" ")[0];
+    data.greeting = mustache.render(randomPrompt, {name: userfname});  // random greeting
+    
     setupSSEEvents();
 }
 
@@ -41,7 +43,7 @@ async function getNotifications() {
     
     const eventsTemplate = document.querySelector("#notificationstemplate"), eventsHTML = eventsTemplate.innerHTML,
         matches = /<!--([\s\S]+)-->/g.exec(eventsHTML), template = matches[1]; 
-    const renderedEvents = (await router.getMustache()).render(template, await router.getPageData(undefined, 
+    const renderedEvents = mustache.render(template, await router.getPageData(undefined, 
         {events:eventsArray.length?eventsArray:undefined})); 
     return renderedEvents;
 }
@@ -55,20 +57,40 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     if (result.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
 
     // handle all errors here and return early
-    const doErrorResult = async err => chatbox.insertAIResponse({error: err||(await i18n.get("EnterpriseAssist_AIError")), ok: false, mime: "text/markdown"});
+    const doErrorResult = async err => chatbox.insertAIResponse({error: err||(await i18n.get("CustomEnterpriseAssist_AIError")), ok: false, mime: "text/markdown"});
     if (!result) {doErrorResult(); return} // error, return
     if ((!result.result) && (result.reason == "limit")) {doErrorResult(await i18n.get("ErrorConvertingAIQuotaLimit")); return}
     // in case of no knowledge, allow the assistant to continue still, with the message that we have no knowledge to answer this particular prompt
-    if ((!result.result) && (result.reason == "noknowledge")) {doErrorResult(await i18n.get("EnterpriseAssist_ErrorNoKnowledge")); return} 
+    if ((!result.result) && (result.reason == "noknowledge")) {doErrorResult(await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge")); return} 
     // bad result means chat failed
     if (!result.result) {doErrorResult(await i18n.get("ChatAIError")); return} 
     // result ok but no metadata means response is not from our data, reject it as well with no knowledge
-    if (!result.metadatas) {doErrorResult(await i18n.get("EnterpriseAssist_ErrorNoKnowledge")); return} 
+    if (!result.metadatas) {doErrorResult(await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge")); return} 
 
     // coming here means we have a good response with no errors
-    const resultRendered = await responseparser.parseAIResponse(result, chatbox);
+    const resultRendered = await parseAIResponse(result, chatbox);
     chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
     setTimeout(_=>delete thoughtSubscribers[message_id], 2000);  // response is final, thoughts can't be updated anymore
+}
+
+async function parseAIResponse(ai_result, chatbox) {
+    if (!ai_result.jsonResponse) ai_result.jsonResponse = {response: ai_result.response};  // handle simple results here
+
+    const references=[]; for (const metadata of (ai_result.metadatas||[])) if (!references.includes(
+          decodeURIComponent(metadata.referencelink))) references.push(decodeURIComponent(metadata.referencelink));
+    if (references.length) ai_result.jsonResponse.references = references;
+
+    // render the text of the final response as MD
+    let rendered = mustache.render(await i18n.get("CustomEnterpriseAssistResponseTemplate"), {
+        response: ai_result.jsonResponse.response, references: ai_result.jsonResponse.references});
+
+    if (ai_result.jsonResponse.analysis_code) {      // add collapsible section for internal code etc
+        const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("CustomEnterpriseAssistAnalysisLabel"), 
+            `\`\`\`${ai_result.jsonResponse.code_language.toLowerCase()}\n${ai_result.jsonResponse.analysis_code}\n\`\`\`\n`);
+        rendered = collapsibleSection + rendered;  
+    }
+
+    return rendered;
 }
 
 function setupSSEEvents() {

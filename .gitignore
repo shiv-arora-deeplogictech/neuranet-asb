@@ -23,3 +23,4 @@ backend/apps/neuranet/cms/*
 backend/apps/neuranet/tests/assets/synthetic_docs/generated
 .DS_store*
 frontend/apps/neuranet/webbundle
+frontend/apps/neuranet/views/custom/**/*

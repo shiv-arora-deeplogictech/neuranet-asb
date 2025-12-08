@@ -33,9 +33,8 @@ export const i18n = {
 "AIResponseAnalysisLabel": "Analysis",
 "AIResponseTemplate": "{{{response}}}\n\n<span id='aireferences' style='font-size: x-small; line-height: 1.2em;'><span style='font-style: italic'>References</span><br/>\n{{#references}}{{.}}<br/>\n{{/references}}<span>",
 
-"ViewLabel_gencode": "Generate Code",
+"ViewLabel_custom": "Custom application",
 "ViewLabel_enterpriseassist": "Enterprise Assistant",
-"ViewLabel_sqltranslate": "Translate SQL",
 "ViewLabel_chat": "General Chat",
 "ViewLabel_aiworkshop": "AI workshop",
 
@@ -45,13 +44,6 @@ export const i18n = {
 "ErrorConvertingAIQuotaLimit": "Your 24 hour spend quota limit has been reached. Please retry tomorrow.",
 
 "NotImplemented": "Not implemented yet.",
-
-"EnterpriseAssist_Done": "Done",
-"EnterpriseAssist_Processing": "Reading",
-"EnterpriseAssist_NoEvents": "No Events.",
-"EnterpriseAssist_KnowledgeBase": "AI Training",
-"EnterpriseAssist_ErrorNoKnowledge": "Sorry I have no knowledge of this topic.",
-"EnterpriseAssist_AIError": "AI error in processing. Please reload the page to start a new assistant request.",
 
 "AIWorkshop_Title": "AI Workshop",
 "AIWorkshop_Subtitle_EditApp": "Editing {{{aiappid}}}",

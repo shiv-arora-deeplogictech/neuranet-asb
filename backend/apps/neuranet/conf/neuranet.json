@@ -14,6 +14,7 @@
 "fastcache_timeout": 10000,
 "cluster_size": 2,
 "python_path": "{{{APPROOT}}}/3p/python.sh",
+"unpublish_cluster_sync_wait": 5000,
 
 "ai_models": {
     "chat-openai": {

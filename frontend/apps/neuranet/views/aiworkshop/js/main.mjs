@@ -89,7 +89,7 @@ async function deleteAIApp() {
     if (!selectedAIAppID) return; // nothing to do.
     const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
     const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", 
-        {id, org, aiappid: selectedAIAppID, op: "delete"}, true);
+        {id, org, aiappid: selectedAIAppID, frontend_relative_webroot: `apps/${APP_CONSTANTS.APP_NAME}`, op: "delete"}, true);
     if (result && result.result) {await neuranetapp.refreshAIApps(); router.reload();}
     else _showError(await i18n.get("AIWorkshop_AIAppGenericError"));
 }
@@ -98,7 +98,7 @@ async function publishAIApp() {
     if (!selectedAIAppID) return; // nothing to do.
     const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
     const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", 
-        {id, org, aiappid: selectedAIAppID, op: "publish"}, true);
+        {id, org, aiappid: selectedAIAppID, frontend_relative_webroot: `apps/${APP_CONSTANTS.APP_NAME}`, op: "publish"}, true);
     if (result && result.result) {await neuranetapp.refreshAIApps(); _showMessage(await i18n.get("AIWorkshop_AIAppGenericSuccess"));}
     else _showError(await i18n.get("AIWorkshop_AIAppGenericError"));
 }
@@ -107,7 +107,7 @@ async function unpublishAIApp() {
     if (!selectedAIAppID) return; // nothing to do.
     const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
     const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${API_OPERATEAIAPP}`, "POST", 
-        {id, org, aiappid: selectedAIAppID, op: "unpublish"}, true);
+        {id, org, aiappid: selectedAIAppID, frontend_relative_webroot: `apps/${APP_CONSTANTS.APP_NAME}`, op: "unpublish"}, true);
     if (result && result.result) {await neuranetapp.refreshAIApps(); _showMessage(await i18n.get("AIWorkshop_AIAppGenericSuccess"));}
     else _showError(await i18n.get("AIWorkshop_AIAppGenericError"));
 }

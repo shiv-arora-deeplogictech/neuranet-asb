@@ -4,33 +4,12 @@
 ---
 id: _org_neuranet_default_aiapp_              # the AI application name / ID
 interface:                                    # the interface details
-  type: enterpriseassist                      # this is for the frontend can be chat, translate or search interfaces
-  show_training_in_chat: false                # should the enterprise assistant show training window in chat for admins
+  type: custom                                # this is for the frontend can be chat, translate or search interfaces
   label: AI assistant                         # the label for the app icon on the UI
   icon: data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQo8cGF0aCBkPSJNNTIuMDgzMyAxNi42NjY3SDQ3LjkxNjdWMjkuMTY2N0g1Mi4wODMzVjE2LjY2NjdaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTEyLjUgNTYuMjVIMTYuNjY2NlY3Ny4wODMzSDEyLjVDMTEuMTMyIDc3LjA4MzMgOS43Nzc1IDc2LjgxMzkgOC41MTM2OSA3Ni4yOTA0QzcuMjQ5ODkgNzUuNzY2OSA2LjEwMTU2IDc0Ljk5OTYgNS4xMzQyOCA3NC4wMzI0QzMuMTgwNzggNzIuMDc4OSAyLjA4MzMxIDY5LjQyOTMgMi4wODMzMSA2Ni42NjY3QzIuMDgzMzEgNjMuOTA0IDMuMTgwNzggNjEuMjU0NSA1LjEzNDI4IDU5LjMwMUM3LjA4Nzc5IDU3LjM0NzUgOS43MzczMSA1Ni4yNSAxMi41IDU2LjI1WiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik04My4zMzMzIDU2LjI1SDg3LjVDOTAuMjYyNyA1Ni4yNSA5Mi45MTIyIDU3LjM0NzUgOTQuODY1NyA1OS4zMDFDOTYuODE5MiA2MS4yNTQ1IDk3LjkxNjYgNjMuOTA0IDk3LjkxNjYgNjYuNjY2N0M5Ny45MTY2IDY5LjQyOTMgOTYuODE5MiA3Mi4wNzg5IDk0Ljg2NTcgNzQuMDMyNEM5Mi45MTIyIDc1Ljk4NTkgOTAuMjYyNyA3Ny4wODMzIDg3LjUgNzcuMDgzM0g4My4zMzMzVjU2LjI1WiIgZmlsbD0idXJsKCNwYWludDJfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik01MCAyNy4wODMzQzU5Ljk0NTYgMjcuMDgzMyA2OS40ODM5IDMxLjAzNDIgNzYuNTE2NSAzOC4wNjY4QzgzLjU0OTEgNDUuMDk5NCA4Ny41IDU0LjYzNzcgODcuNSA2NC41ODMzVjgxLjI1Qzg3LjUgODIuMzU1MSA4Ny4wNjEgODMuNDE0OSA4Ni4yNzk2IDg0LjE5NjNDODUuNDk4MiA4NC45Nzc3IDg0LjQzODQgODUuNDE2NyA4My4zMzMzIDg1LjQxNjdIMTYuNjY2N0MxNS41NjE2IDg1LjQxNjcgMTQuNTAxOCA4NC45Nzc3IDEzLjcyMDQgODQuMTk2M0MxMi45MzkgODMuNDE0OSAxMi41IDgyLjM1NTEgMTIuNSA4MS4yNVY2NC41ODMzQzEyLjUgNTQuNjM3NyAxNi40NTA5IDQ1LjA5OTQgMjMuNDgzNSAzOC4wNjY4QzMwLjUxNjEgMzEuMDM0MiA0MC4wNTQ0IDI3LjA4MzMgNTAgMjcuMDgzM1oiIGZpbGw9IiMxOTlCRTIiLz4NCjxwYXRoIGQ9Ik0zMy4zMzMzIDc3LjA4MzNDNDAuMjM2OSA3Ny4wODMzIDQ1LjgzMzMgNzEuNDg2OSA0NS44MzMzIDY0LjU4MzNDNDUuODMzMyA1Ny42Nzk4IDQwLjIzNjkgNTIuMDgzMyAzMy4zMzMzIDUyLjA4MzNDMjYuNDI5OCA1Mi4wODMzIDIwLjgzMzMgNTcuNjc5OCAyMC44MzMzIDY0LjU4MzNDMjAuODMzMyA3MS40ODY5IDI2LjQyOTggNzcuMDgzMyAzMy4zMzMzIDc3LjA4MzNaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTY2LjY2NjcgNzcuMDgzM0M3My41NzAyIDc3LjA4MzMgNzkuMTY2NyA3MS40ODY5IDc5LjE2NjcgNjQuNTgzM0M3OS4xNjY3IDU3LjY3OTggNzMuNTcwMiA1Mi4wODMzIDY2LjY2NjcgNTIuMDgzM0M1OS43NjMxIDUyLjA4MzMgNTQuMTY2NyA1Ny42Nzk4IDU0LjE2NjcgNjQuNTgzM0M1NC4xNjY3IDcxLjQ4NjkgNTkuNzYzMSA3Ny4wODMzIDY2LjY2NjcgNzcuMDgzM1oiIGZpbGw9InVybCgjcGFpbnQ0X2xpbmVhcl80MDhfMjYpIi8+DQo8cGF0aCBkPSJNNjYuNjY2NyA3Mi45MTY3QzcxLjI2OSA3Mi45MTY3IDc1IDY5LjE4NTcgNzUgNjQuNTgzM0M3NSA1OS45ODEgNzEuMjY5IDU2LjI1IDY2LjY2NjcgNTYuMjVDNjIuMDY0MyA1Ni4yNSA1OC4zMzMzIDU5Ljk4MSA1OC4zMzMzIDY0LjU4MzNDNTguMzMzMyA2OS4xODU3IDYyLjA2NDMgNzIuOTE2NyA2Ni42NjY3IDcyLjkxNjdaIiBmaWxsPSJ3aGl0ZSIvPg0KPHBhdGggZD0iTTY2LjY2NjcgNjguNzVDNjguOTY3OSA2OC43NSA3MC44MzMzIDY2Ljg4NDUgNzAuODMzMyA2NC41ODMzQzcwLjgzMzMgNjIuMjgyMSA2OC45Njc5IDYwLjQxNjcgNjYuNjY2NyA2MC40MTY3QzY0LjM2NTUgNjAuNDE2NyA2Mi41IDYyLjI4MjEgNjIuNSA2NC41ODMzQzYyLjUgNjYuODg0NSA2NC4zNjU1IDY4Ljc1IDY2LjY2NjcgNjguNzVaIiBmaWxsPSJ1cmwoI3BhaW50NV9saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTMzLjMzMzMgNzIuOTE2N0MzNy45MzU3IDcyLjkxNjcgNDEuNjY2NyA2OS4xODU3IDQxLjY2NjcgNjQuNTgzM0M0MS42NjY3IDU5Ljk4MSAzNy45MzU3IDU2LjI1IDMzLjMzMzMgNTYuMjVDMjguNzMxIDU2LjI1IDI1IDU5Ljk4MSAyNSA2NC41ODMzQzI1IDY5LjE4NTcgMjguNzMxIDcyLjkxNjcgMzMuMzMzMyA3Mi45MTY3WiIgZmlsbD0id2hpdGUiLz4NCjxwYXRoIGQ9Ik0zMy4zMzMzIDY4Ljc1QzM1LjYzNDUgNjguNzUgMzcuNSA2Ni44ODQ1IDM3LjUgNjQuNTgzM0MzNy41IDYyLjI4MjEgMzUuNjM0NSA2MC40MTY3IDMzLjMzMzMgNjAuNDE2N0MzMS4wMzIxIDYwLjQxNjcgMjkuMTY2NyA2Mi4yODIxIDI5LjE2NjcgNjQuNTgzM0MyOS4xNjY3IDY2Ljg4NDUgMzEuMDMyMSA2OC43NSAzMy4zMzMzIDY4Ljc1WiIgZmlsbD0idXJsKCNwYWludDZfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik01MCAyMC44MzMzQzUyLjMwMTIgMjAuODMzMyA1NC4xNjY3IDE4Ljk2NzkgNTQuMTY2NyAxNi42NjY3QzU0LjE2NjcgMTQuMzY1NSA1Mi4zMDEyIDEyLjUgNTAgMTIuNUM0Ny42OTg4IDEyLjUgNDUuODMzMyAxNC4zNjU1IDQ1LjgzMzMgMTYuNjY2N0M0NS44MzMzIDE4Ljk2NzkgNDcuNjk4OCAyMC44MzMzIDUwIDIwLjgzMzNaIiBmaWxsPSIjMTk5QkUyIi8+DQo8ZGVmcz4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl80MDhfMjYiIHgxPSI1MCIgeTE9IjE4Ljk3NzEiIHgyPSI1MCIgeTI9IjI4LjI2NjciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwMDc3RDIiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQxX2xpbmVhcl80MDhfMjYiIHgxPSI5LjM3NDk4IiB5MT0iNTUuNjYwNCIgeDI9IjkuMzc0OTgiIHkyPSI4Ny4wNTQyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDNCM0ZGIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50Ml9saW5lYXJfNDA4XzI2IiB4MT0iOTAuNjI1IiB5MT0iNTUuNjYwNCIgeDI9IjkwLjYyNSIgeTI9Ijg3LjA1NDIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwM0IzRkYiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQzX2xpbmVhcl80MDhfMjYiIHgxPSIzMy4zMzMzIiB5MT0iNTIuMTk1OCIgeDI9IjMzLjMzMzMiIHkyPSI5MC42MTQ2IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3N0QyIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50NF9saW5lYXJfNDA4XzI2IiB4MT0iNjYuNjY2NyIgeTE9IjUyLjE5NTgiIHgyPSI2Ni42NjY3IiB5Mj0iOTAuNjE0NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPg0KPHN0b3Agc3RvcC1jb2xvcj0iIzAwNzdEMiIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMEI1OUEyIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzQwOF8yNiIgeDE9IjY2LjY2NjciIHkxPSI1Mi4xOTU4IiB4Mj0iNjYuNjY2NyIgeTI9IjkwLjYxNDYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwM0IzRkYiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQ2X2xpbmVhcl80MDhfMjYiIHgxPSIzMy4zMzMzIiB5MT0iNTIuMTk1OCIgeDI9IjMzLjMzMzMiIHkyPSI5MC42MTQ2IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDNCM0ZGIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8L2RlZnM+DQo8L3N2Zz4NCg==
-  skippable_file_patterns: 
+  skippable_file_patterns:                    # skip these files from references
     - ^_neuranet_generated?.+
     - ^\.system?.+
-  tts: false
-  stt: false
-  typewriter: 2
-  starter_prompts_en:
-    - What can I help with?
-    - What’s on the agenda today?
-    - How can I help, {{name}}?
-    - Good to see you, {{name}}.
-    - How can I help, {{name}}?
-    - What are you working on?
-    - Hey, {{name}}. Ready to dive in?
-    - What’s on your mind today?
-    - Where should we begin?
-    - How can I support you today, {{name}}?
-    - What do you want to tackle first?
-    - Ready when you are, {{name}}.
-    - What should we work on next?
-    - How can I make things easier today?
-    - What’s the plan for today, {{name}}?
-    - Just say the word, I am ready to help.
 endpoint: llmflow                             # the API endpoint - usually llmflow
 users: ["*"]                                  # the * means all users, else must be an array of user IDs
 admins:                                       # the admins for this app - they can train for example
@@ -55,12 +34,6 @@ pregen_flow:
 
       prompt: |                               # these can be prompt, prompt_docISOLanguage, prompt_fragment_fragmentISOLanguage
         Rephrase the document below with alternate keywords.
-        {{{fragment}}}
-      prompt_zh: |
-        用替代关键词重新表述下面的文档。
-        {{{fragment}}}
-      prompt_ja: |
-        以下の文書を別のキーワードで言い換えてください。
         {{{fragment}}}
       prompt_hi: |
         नीचे दिए गए दस्तावेज़ को वैकल्पिक कीवर्ड के साथ पुनः लिखें।
@@ -100,32 +73,6 @@ llm_flow:
         New question: {{{question}}}
 
         The rephrased question is:
-      prompt_zh_noinflate: |
-        给定先前的问题和新问题，用名词重新表述新问题的代词。
-        如果先前的问题与此问题无关，则不要重新表述并返回新问题而不进行修改。
-        先前的问题：
-        {{#flatsession}}
-        {{#user}}
-        {{{.}}}
-        {{/user}}
-        {{/flatsession}}
-
-        新问题：{{{question}}}
-
-        重新表述的问题是：
-      prompt_ja_noinflate: |
-        以前の質問と新しい質問が与えられた場合、新しい質問の代名詞を名詞に言い換えます。
-        以前の質問がこの質問に関連していない場合は、言い換えずに新しい質問を変更せずに返します。
-        以前の質問:
-        {{#flatsession}}
-        {{#user}}
-        {{{.}}}
-        {{/user}}
-        {{/flatsession}}
-
-        新しい質問: {{{question}}}
-
-        言い換えた質問は次のとおりです。
       prompt_hi_noinflate: |
         पिछले प्रश्नों और एक नए प्रश्न को देखते हुए, नए प्रश्न के सर्वनामों को संज्ञाओं के साथ फिर से लिखें।
         यदि पिछले प्रश्न इस प्रश्न के लिए प्रासंगिक नहीं हैं, तो फिर से न लिखें और बिना संशोधन के नया प्रश्न लौटाएँ।
@@ -213,48 +160,6 @@ llm_flow:
         {{{question}}}
 
         The answer is:
-      prompt_zh_noinflate: |                  # means do not inflate this at the flow engine - the calling command will use it as is
-        仅使用下面提供的文件回答以下问题。
-        {{#files.length}}也使用附件中的信息。{{/files.length}}
-
-        {{#files.length}}附件：{{/files.length}}
-        {{#files}}
-        文件名：{{{filename}}}
-        {{{text}}}
-
-        {{/files}}
-
-        文件：
-        {{#documents}}
-        {{{content}}}
-
-        {{/documents}}
-
-        问题：
-        {{{question}}}
-
-        答案是：
-      prompt_ja_noinflate: |                   
-        以下の質問には、下記のドキュメントのみを使用して回答してください。
-        {{#files.length}}添付ファイルの情報も使用してください。{{/files.length}}
-
-        {{#files.length}}添付ファイル:{{/files.length}}
-        {{#files}}
-        ファイル名: {{{filename}}}
-        {{{text}}}
-
-        {{/files}}
-
-        ドキュメント:
-        {{#documents}}
-        {{{content}}}
-
-        {{/documents}}
-
-        質問:
-        {{{question}}}
-
-        答えは次のとおりです:
       prompt_hi_noinflate: |                  # means do not inflate this at the flow engine - the calling command will use it as is
         निम्नलिखित प्रश्न का उत्तर केवल नीचे दिए गए दस्तावेज़ों का उपयोग करके दें।
         {{#files.length}}संलग्न फ़ाइलों से जानकारी का भी उपयोग करें।{{/files.length}}
@@ -325,11 +230,11 @@ global_models:
 
   - name: chat-knowledgebase-openai
     model_overrides:                    
-      read_ai_response_from_samples: false
+      read_ai_response_from_samples: true
 
   - name: simplellm-openai
     model_overrides:                    
-      read_ai_response_from_samples: false
+      read_ai_response_from_samples: true
 
 
 modules: 

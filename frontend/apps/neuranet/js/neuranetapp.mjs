@@ -12,7 +12,7 @@ import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url), AI_WORKSHOP_VIEW = "aiworkshop", IMAGE_DATA = "data:image",
-    API_GET_AIAPPS = "getorgaiapps";
+    API_GET_AIAPPS = "getorgaiapps", CUSTOM_INTERFACE = "custom";
 
 let loginappMain;
 
@@ -47,7 +47,7 @@ async function _createdata(data) {
         if (appsAllowed.length > 1) data.showhome = true;
         const appidToOpen = appid||_getAppToForceLoadOrFalse(), 
             app = (appsAllowed.filter(app => app.id == appidToOpen))[0];
-        viewPath = `${APP_CONSTANTS.VIEWS_PATH}/${app.interface.type}`;
+        viewPath = getViewPath(app, loginresponse.org);
         aiendpoint = app.endpoint; activeaiapp = app;
     }
 
@@ -58,9 +58,10 @@ async function _createdata(data) {
         viewPath = `${APP_CONSTANTS.VIEWS_PATH}/${APP_CONSTANTS.VIEW_CHOOSER}`;
         views = []; 
         for (const app of appsAllowed) if (app.interface != APP_CONSTANTS.VIEW_CHOOSER) views.push(  // views we can choose from
-            {viewicon: app.interface?.icon && app.interface.icon.toLowerCase().startsWith(IMAGE_DATA) ? app.interface.icon :
+            {viewicon: (app.interface?.icon && app.interface.icon.toLowerCase().startsWith(IMAGE_DATA)) ? app.interface.icon :
+                app.interface.type == CUSTOM_INTERFACE ? `${getViewPath(app, loginresponse.org)}/img/logo.svg` : 
                 `${APP_CONSTANTS.VIEWS_PATH}/${app.interface.type.toString()}/img/icon.svg`, 
-            viewlabel: app.interface?.label||await i18n.get(`ViewLabel_${app.interface.type.toString()}`), 
+            viewlabel: app.interface.label||await i18n.get(`ViewLabel_${app.interface.type.toString()}`), 
             viewid: app.id});
     } 
 
@@ -83,6 +84,11 @@ async function openView(appid) {
 }
 
 function onlogout() {session.remove(APP_CONSTANTS.FORCE_LOAD_VIEW);}
+
+function getViewPath(app, org) {
+    if (app.interface.type == CUSTOM_INTERFACE) return `${APP_CONSTANTS.VIEWS_PATH}/custom/${org}/${app.id}`;
+    else return `${APP_CONSTANTS.VIEWS_PATH}/${app.interface.type}`;
+}
 
 
 export const neuranetapp = {main, openView, closeview, onlogout, refreshAIApps};

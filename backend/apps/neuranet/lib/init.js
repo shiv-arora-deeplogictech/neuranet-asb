@@ -9,6 +9,7 @@ const mustache = require("mustache");
 exports.initSync = _approot => {
     _readConfSync();    // the files below need constants to be setup properly so require them after conf is setup
 
+    const aiapp = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
     const events = require(`${NEURANET_CONSTANTS.APIDIR}/events.js`);
     const aidbfs = require(`${NEURANET_CONSTANTS.LIBDIR}/aidbfs.js`);
     const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
@@ -22,6 +23,7 @@ exports.initSync = _approot => {
     loginhandler.initSync(); 
     fileindexer.initSync();
     events.initSync();
+    aiapp.initSync();
     brainhandler.initSync();
     aidbfs.initSync();
     neuranetAPIKeyChecker.initSync();

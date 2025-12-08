@@ -50,7 +50,8 @@ async function logout(dueToTimeout) {
 
     const savedLang = session.get($$.MONKSHU_CONSTANTS.LANG_ID);
     session.remove(APP_CONSTANTS.USERID); session.remove(APP_CONSTANTS.USERNAME);
-    session.remove(APP_CONSTANTS.USERORG); session.remove("__org_monkshu_cuser_pass");
+    session.remove(APP_CONSTANTS.USERORG); session.remove(APP_CONSTANTS.CURRENT_USERROLE);
+    session.remove(APP_CONSTANTS.USERORGDOMAIN); session.remove(APP_CONSTANTS.LOGIN_RESPONSE);
     session.set($$.MONKSHU_CONSTANTS.LANG_ID, savedLang); securityguard.setCurrentRole(APP_CONSTANTS.GUEST_ROLE);
     
     if (dueToTimeout) application.main(APP_CONSTANTS.ERROR_HTML, {error: await i18n.get("Timeout_Error"), 

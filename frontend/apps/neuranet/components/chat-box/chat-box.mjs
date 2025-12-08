@@ -22,9 +22,10 @@ let MUSTACHE;
 
 async function elementConnected(host) {
     const ATTACHMENT_ALLOWED = host.getAttribute("attach")?.toLowerCase() == "true";
-    const stt_flag = host.getAttribute("stt")?.toLowerCase() == "true", tts_flag = host.getAttribute("tts")?.toLowerCase() == "true";
+    const stt_flag = host.getAttribute("stt")?.toLowerCase() == "true", 
+        tts_flag = host.getAttribute("tts")?.toLowerCase() == "true", greeting = host.getAttribute("greeting") || "";
 	chat_box.setDataByHost(host, {COMPONENT_PATH, ATTACHMENT_ALLOWED: ATTACHMENT_ALLOWED?"true":undefined, 
-        STT: stt_flag?"true":undefined, TTS: tts_flag?"true":undefined });
+        STT: stt_flag?"true":undefined, TTS: tts_flag?"true":undefined, GREETING: greeting });
     const memory = chat_box.getMemoryByHost(host); memory.FILES_ATTACHED = [];
     const typewriter = host.getAttribute("typewriter");
     memory.typewriter = typewriter ? (typewriter.toLowerCase() == "false" ? false : parseInt(host.getAttribute("typewriter"))) : false;
@@ -157,6 +158,7 @@ function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     }
     
     // clear the message area and attached files to prepare for the next message
+    userMessageArea.placeholder = "";   // disable placeholders after the initial starter prompt
     userMessageArea.value = ""; // clear text area for the next prompt
     _detachAllFiles(shadowRoot, false);  // clear file attachments
 }

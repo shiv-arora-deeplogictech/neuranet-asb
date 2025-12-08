@@ -7,7 +7,7 @@
     "/apps/{{app}}/events" : "/apis/events.js?get=true&keys=fheiwu98237hjief8923ydewjidw834284hwqdnejwr79389&needsToken=true&checkClaims=id,org",
     "/apps/{{app}}/sseevents" : "/apis/sseevents.js?get=true&sse=true&sseint=3000&keys=fheiwu98237hjief8923ydewjidw834284hwqdnejwr79389&needsToken=true&checkClaims=id,org",
     "/apps/{{app}}/getorgaiapps" : "/apis/getorgaiapps.js?get=true&keys=fheiwu98237hjief8923ydewjidw834284hwqdnejwr79389&needsToken=true&checkClaims=org",
-    "/apps/{{app}}/operateaiapp" : "/apis/operateaiapp.js?keys=fheiwu98237hjief8923ydewjidw834284hwqdnejwr79389&needsToken=true&checkClaims=id,org",
+    "/apps/{{app}}/operateaiapp" : "/apis/operateaiapp.js?checksec_immediate=false&keys=fheiwu98237hjief8923ydewjidw834284hwqdnejwr79389&needsToken=true&checkClaims=id,org",
     "/apps/{{app}}/llmflow" : "/apis/llmflow.js?checksec_immediate=false&customSecurity=neuranet_key_checker&neuranet_key_checker_enforce_for_jwt=id,org",
     "/apps/{{app}}/indexdoc" : "/apis/indexdoc.js?checksec_immediate=false&customSecurity=neuranet_key_checker&neuranet_key_checker_enforce_for_jwt=id,org",
     "/apps/{{app}}/unindexdoc" : "/apis/unindexdoc.js?checksec_immediate=false&customSecurity=neuranet_key_checker&neuranet_key_checker_enforce_for_jwt=id,org",

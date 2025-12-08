@@ -119,6 +119,7 @@ textarea#messagearea {
     border: 0;
     background-color: transparent;
 }
+textarea#messagearea::placeholder {color: #5ebfe9;}
 span#messagecontrols {
     display: flex;
     flex-direction: row;
@@ -356,9 +357,9 @@ div.thought {
 
 <div id="messageareabackgroundcolor">
 <div id="message">
-    <textarea id="messagearea" onkeyup="
+    <textarea id="messagearea" placeholder="{{{GREETING}}}"  onkeyup="
         const multiline = this.parentNode.querySelector('input#multiline').checked;
-        if (event.key == 'Enter' && (!multiline)) monkshu_env.components['chat-box'].send(this)
+        if (event.key == 'Enter' && (!multiline)) monkshu_env.components['chat-box'].send(this);
     "></textarea>
     <span id="messagecontrols">
         <span id="attachedfiles"><!-- attached files go here --></span>

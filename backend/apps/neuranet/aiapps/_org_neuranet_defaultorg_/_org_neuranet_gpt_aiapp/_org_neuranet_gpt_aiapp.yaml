@@ -10,23 +10,6 @@ interface:                                  # the interface details
   tts: false
   stt: false
   typewriter: 2
-  starter_prompts_en:
-    - What can I help with?
-    - What’s on the agenda today?
-    - How can I help, {{name}}?
-    - Good to see you, {{name}}.
-    - How can I help, {{name}}?
-    - What are you working on?
-    - Hey, {{name}}. Ready to dive in?
-    - What’s on your mind today?
-    - Where should we begin?
-    - How can I support you today, {{name}}?
-    - What do you want to tackle first?
-    - Ready when you are, {{name}}.
-    - What should we work on next?
-    - How can I make things easier today?
-    - What’s the plan for today, {{name}}?
-    - Just say the word, I am ready to help.
 endpoint: llmflow                           # the API endpoint - usually llmflow
 users: ["*"]                                # the * means all users, else must be an array of user IDs
 admins:                                     # the admins for this app - they can train for example
