@@ -198,7 +198,7 @@ async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/mar
     // we are no longer thinking, so the label should now be thoughts, not thinking
     const elementThinkingSectionHeaderElement = insertion.querySelector("div#aithoughtsection div.collapsiblebutton");
     if (elementThinkingSectionHeaderElement) {
-        elementThinkingSectionHeaderElement.innerHTML = await i18n.get("ChatThoughtsLabel");
+        elementThinkingSectionHeaderElement.innerHTML = await i18n.get("ChatboxThoughtsLabel");
         elementThinkingSectionHeaderElement.classList.remove("rollinghighlight");
     }
 

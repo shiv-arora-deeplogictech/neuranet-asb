@@ -6,24 +6,33 @@
 
 import {i18n} from "/framework/js/i18n.mjs";
 import {util} from "/framework/js/util.mjs";
+import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
-const responseparser = (await import (`${APP_CONSTANTS.LIB_PATH}/responseparser.mjs`)).responseparser;
 
-const MODULE_PATH = util.getModulePathFromURL(import.meta.url);
 const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts";
 
-let chatsessionID, old_thoughts={}, thoughtSubscribers=[], AI_ENDPOINT;
+let chatsessionID, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
 
-function initView(data) {
+async function initView(data) {
+    mustache = await router.getMustache();
     window.monkshu_env.apps[APP_CONSTANTS.APP_NAME] = {
         ...(window.monkshu_env.apps[APP_CONSTANTS.APP_NAME]||{}), chat_main: main}; 
-    data.icons_refresh = `${MODULE_PATH}/../img/newchat`;
+    data.VIEW_PATH = data.viewpath;
+    VIEW_PATH = data.viewpath;
     AI_ENDPOINT = data.aiendpoint;
+    i18n.addPath(`${VIEW_PATH}`);
+    
+    const starterPrompts = (await i18n.get("ChatStarterPrompts")).split("|").map(value=>value.trim());
+    const randomPrompt = starterPrompts[Math.floor(Math.random()*starterPrompts.length)];
+    const userfname = session.get(APP_CONSTANTS.USERNAME).toString().split(" ")[0];
+    data.greeting = mustache.render(randomPrompt, {name: userfname});  // random greeting
+
     data.tts_flag = data.activeaiapp.interface.tts == true ? "true" : "false";
     data.stt_flag = data.activeaiapp.interface.stt == true ? "true" : "false";
-    data.typewriter = data.activeaiapp.interface.typewriter ? data.activeaiapp.interface.typewriter : "false";
-    setupSSEEvents();
+    data.typewriter = data.activeaiapp.interface.typewriter == false ? undefined : 2;
+
+    _setupSSEEvents();
 }
 
 async function getAssistantResult(question, files, message_id, chatbox, aiappid) {
@@ -39,19 +48,32 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     if (!result?.result) {
         doErrorResult(result?.reason == "limit"?await i18n.get("ErrorConvertingAIQuotaLimit"):undefined); 
         return;
-    } 
+    }
 
     // coming here means we have a good response with no errors
-    const resultRendered = await responseparser.parseAIResponse(result, chatbox); 
+    const resultRendered = await parseAIResponse(result, chatbox);
     chatbox.insertAIResponse({ok: true, response: resultRendered, mime: "text/markdown"}, message_id);
     setTimeout(_=>delete thoughtSubscribers[message_id], 2000);  // response is final, thoughts can't be updated anymore
 }
 
-function setupSSEEvents() {
+async function parseAIResponse(ai_result, chatbox) {
+    if (!ai_result.jsonResponse) ai_result.jsonResponse = {response: ai_result.response};  // handle simple results here
+
+    const rendered = ai_result.jsonResponse.response;
+    if (ai_result.jsonResponse.analysis_code) {      // add collapsible section for internal code etc
+        const collapsibleSection = chatbox.getCollapsibleSection(await i18n.get("ChatAnalysisLabel"), 
+            `\`\`\`${ai_result.jsonResponse.code_language.toLowerCase()}\n${ai_result.jsonResponse.analysis_code}\n\`\`\`\n`);
+        rendered = collapsibleSection + rendered;  
+    }
+
+    return rendered;
+}
+
+function _setupSSEEvents() {
     const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
     const sseURL = `${APP_CONSTANTS.API_PATH}/${API_SSE_EVENTS}`;
     const sse = apiman.subscribeSSEEvents(sseURL, {id, org}, true);
-    sse.addEventListener(NN_THOUGHTS_EVENT_NAME, event => {
+    sse.addEventListener(NN_THOUGHTS_EVENT_NAME, event => { // API thought events
         try {
             const thought_events = JSON.parse(event.data).events;
             if (!util.areObjectsEqual(old_thoughts, thought_events)) {

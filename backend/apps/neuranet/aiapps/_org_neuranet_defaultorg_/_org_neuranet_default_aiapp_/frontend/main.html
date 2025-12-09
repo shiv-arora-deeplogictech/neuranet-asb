@@ -24,39 +24,15 @@ div#maincontainer {
     display: flex; 
     flex-direction: row;
 }
-chat-box#enterpriseassistant {width: 100%;}
+chat-box#enterpriseassistant {width: 100%; height: 100%}
 </style>
 
 <div id="maincontainer">
 
 <chat-box id="enterpriseassistant" chatapi="{{APP_CONSTANTS.API_PATH}}/{{aiendpoint}}"
-    attach="true" attachaccepts=".txt,.docx,.pdf,.xlsx" maxattachsize="4194304" maxattachsizeerror="{{i18n.MaxSizeError}}"
-    maxattachments="4" maxattachmentserror="{{i18n.MaxAttachmentsError}}"
+    attach="true" attachaccepts=".txt,.docx,.pdf,.xlsx" maxattachsize="4194304" maxattachsizeerror="{{i18n.CustomEnterpriseAssistMaxSizeError}}"
+    maxattachments="4" maxattachmentserror="{{i18n.CustomEnterpriseAssistMaxAttachmentsError}}"
     tts="false" stt="false" typewriter="2" greeting="{{greeting}}"
     onrequest="window.monkshu_env.apps[APP_CONSTANTS.APP_NAME].custom_enterprise_assist_main.getAssistantResult(prompt, files, message_id, chatbox, '{{{activeaiapp.id}}}')"></chat-box>
 
 </div>
-
-<template id="notificationstemplate">
-<!-- {{=<% %>=}} 
-<style>
-    div#notificationsmain {padding: 1em; box-sizing: border-box; font-size: small; cursor: default;}
-    div#singlenotification {display: flex; flex-flow: row; align-items: center; gap: 0.5em;}
-    span#path {width: 8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 1em;}
-    span#donenotifier {width: 5em;}
-    span#progressimage {width: 1.2em; height: 1.2em;}
-    span#progressimage > img {width: 100%; height: 100%;}
-</style>
-<div id="notificationsmain">
-{{#events}}
-<div id="singlenotification">
-    <span id="path" title="{{path}}">{{path}}</span>
-    <span id="percentage">{{percentage}}%</span>
-    <span id="donenotifier">{{#done}}{{i18n.CustomEnterpriseAssist_Done}}{{/done}}{{^done}}{{i18n.CustomEnterpriseAssist_Processing}}{{/done}}</span>
-    <span id="progressimage"><img src="{{{VIEW_PATH}}}/img/spinner{{#success}}{{#done}}done{{/done}}{{/success}}{{#error}}error{{/error}}{{^done}}progress{{/done}}.svg"></span>
-</div>
-{{/events}}
-{{^events}}{{i18n.CustomEnterpriseAssist_NoEvents}}{{/events}}
-</div>
-<%={{ }}=%> -->
-</template>
