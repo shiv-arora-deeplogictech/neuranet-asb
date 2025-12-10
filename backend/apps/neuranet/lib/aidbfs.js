@@ -7,12 +7,17 @@
  * 
  * Neuranet Distributed DB design 
  * 	- Xbin Publishes the event to the entire distributed cluster, NFS volume is shared
- * 	- Neuranet (fileindexer) - catches only the local events for the cluster and each 
- *    local cluster node processes them independently, thus local cluster eventually syncs
- * 	- This causes disjoint distributed AI DB across the distributed cluster 
+ * 	- Neuranet (fileindexer) - catches only the local events for the cluster so only the NN
+ *    local cluster, of which the XBin node which received the file is a part of processes 
+ *    the file. Each local cluster node processes them independently, thus local cluster 
+ *    eventually syncs
+ * 	- This causes disjoint distributed AI DB across the distributed cluster as some files are in some
+ *    local clusters and others are in the other. Thus, the load balancer for XBin decides the file
+ *    distribution and individual cluster balancing. 
  * 	- So queries need entire distributed cluster to respond (allows large DBs and distributed processing)
  * 	
- * 	- Delete and updates - the server receiving the XBin event may not have the files in the AI DB, as the DBs are disjoint so they need to be send to the external cluster members to sync 
+ * 	- Delete and updates - the server receiving the XBin event may not have the files in the AI DB, as 
+ *    the DBs are disjoint so they need to be send to the external cluster members to sync 
  * 	
  * 	- Create can always be local as DBs are disjoint by design
  * 
