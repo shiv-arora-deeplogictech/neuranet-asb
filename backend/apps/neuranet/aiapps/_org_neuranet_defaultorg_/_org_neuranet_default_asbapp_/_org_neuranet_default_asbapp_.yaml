@@ -30,25 +30,6 @@ ingestiondbs: ["nntfidfdb"]                 # the ingestion databases
 # point. the command sytax is documented below as well.
 
 pregen_flow: 
-  - command: rephrasedoc                    # entry function name is skipped as the default is generate anyways
-    in: 
-      label: Rephrased
-
-      prompt: |                             # these can be prompt, prompt_docISOLanguage, prompt_fragment_fragmentISOLanguage
-        Rephrase the document below with alternate keywords.
-        {{{fragment}}}
-
-      models: 
-        - name: simplellm-openai
-          type: chat
-          model_overrides:                  # this allows us to override model params on a per AI app basis, can be a nested path e.g. driver.host if we are calling API at a different host name etc          
-        - name: embedding-openai
-          type: embeddings
-          model_overrides:                      
-      pregenfile_prefix: reworded
-      pregenfile_dir: _neuranet_generated
-      pregenfile_ext: txt
-      encoding: utf8
 
 llm_flow:   
   - command: asbagent                       # default function entry is answer so entry function name is skipped
@@ -64,9 +45,9 @@ llm_flow:
       files_js: return request.files
       tmp_dir_name: /tempdir/
       model: {"name": "chat-openai"}
-      flow:
+      asbflow:
         flow:
-          name: Hello world ASB in AI
+          name: Simple chat using ASB in AI
           expandRouteProperties: true
         listener:
           type: inproc_listener

@@ -1,0 +1,150 @@
+# This YAML file is the core of any AI application. The ID in the file, the file name and the hosting folder must
+# match. The file documents rest of the commands and syntax.
+#
+# ASB JS inline code syntax checker template below for Yaml inline code
+# (async function anonymous(flow,routeName,js,messageContainer,message) {
+#    // add your JS node code here and check in any Javascript syntax checker
+# })
+
+---
+id: _org_neuranet_default_aiapp_asb           # the AI application name / ID
+interface:                                    # the interface details
+  type: custom                                # this is for the frontend can be chat, translate or search interfaces
+  label: AI assistant                         # the label for the app icon on the UI
+  icon: data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQo8cGF0aCBkPSJNNTIuMDgzMyAxNi42NjY3SDQ3LjkxNjdWMjkuMTY2N0g1Mi4wODMzVjE2LjY2NjdaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTEyLjUgNTYuMjVIMTYuNjY2NlY3Ny4wODMzSDEyLjVDMTEuMTMyIDc3LjA4MzMgOS43Nzc1IDc2LjgxMzkgOC41MTM2OSA3Ni4yOTA0QzcuMjQ5ODkgNzUuNzY2OSA2LjEwMTU2IDc0Ljk5OTYgNS4xMzQyOCA3NC4wMzI0QzMuMTgwNzggNzIuMDc4OSAyLjA4MzMxIDY5LjQyOTMgMi4wODMzMSA2Ni42NjY3QzIuMDgzMzEgNjMuOTA0IDMuMTgwNzggNjEuMjU0NSA1LjEzNDI4IDU5LjMwMUM3LjA4Nzc5IDU3LjM0NzUgOS43MzczMSA1Ni4yNSAxMi41IDU2LjI1WiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik04My4zMzMzIDU2LjI1SDg3LjVDOTAuMjYyNyA1Ni4yNSA5Mi45MTIyIDU3LjM0NzUgOTQuODY1NyA1OS4zMDFDOTYuODE5MiA2MS4yNTQ1IDk3LjkxNjYgNjMuOTA0IDk3LjkxNjYgNjYuNjY2N0M5Ny45MTY2IDY5LjQyOTMgOTYuODE5MiA3Mi4wNzg5IDk0Ljg2NTcgNzQuMDMyNEM5Mi45MTIyIDc1Ljk4NTkgOTAuMjYyNyA3Ny4wODMzIDg3LjUgNzcuMDgzM0g4My4zMzMzVjU2LjI1WiIgZmlsbD0idXJsKCNwYWludDJfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik01MCAyNy4wODMzQzU5Ljk0NTYgMjcuMDgzMyA2OS40ODM5IDMxLjAzNDIgNzYuNTE2NSAzOC4wNjY4QzgzLjU0OTEgNDUuMDk5NCA4Ny41IDU0LjYzNzcgODcuNSA2NC41ODMzVjgxLjI1Qzg3LjUgODIuMzU1MSA4Ny4wNjEgODMuNDE0OSA4Ni4yNzk2IDg0LjE5NjNDODUuNDk4MiA4NC45Nzc3IDg0LjQzODQgODUuNDE2NyA4My4zMzMzIDg1LjQxNjdIMTYuNjY2N0MxNS41NjE2IDg1LjQxNjcgMTQuNTAxOCA4NC45Nzc3IDEzLjcyMDQgODQuMTk2M0MxMi45MzkgODMuNDE0OSAxMi41IDgyLjM1NTEgMTIuNSA4MS4yNVY2NC41ODMzQzEyLjUgNTQuNjM3NyAxNi40NTA5IDQ1LjA5OTQgMjMuNDgzNSAzOC4wNjY4QzMwLjUxNjEgMzEuMDM0MiA0MC4wNTQ0IDI3LjA4MzMgNTAgMjcuMDgzM1oiIGZpbGw9IiMxOTlCRTIiLz4NCjxwYXRoIGQ9Ik0zMy4zMzMzIDc3LjA4MzNDNDAuMjM2OSA3Ny4wODMzIDQ1LjgzMzMgNzEuNDg2OSA0NS44MzMzIDY0LjU4MzNDNDUuODMzMyA1Ny42Nzk4IDQwLjIzNjkgNTIuMDgzMyAzMy4zMzMzIDUyLjA4MzNDMjYuNDI5OCA1Mi4wODMzIDIwLjgzMzMgNTcuNjc5OCAyMC44MzMzIDY0LjU4MzNDMjAuODMzMyA3MS40ODY5IDI2LjQyOTggNzcuMDgzMyAzMy4zMzMzIDc3LjA4MzNaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTY2LjY2NjcgNzcuMDgzM0M3My41NzAyIDc3LjA4MzMgNzkuMTY2NyA3MS40ODY5IDc5LjE2NjcgNjQuNTgzM0M3OS4xNjY3IDU3LjY3OTggNzMuNTcwMiA1Mi4wODMzIDY2LjY2NjcgNTIuMDgzM0M1OS43NjMxIDUyLjA4MzMgNTQuMTY2NyA1Ny42Nzk4IDU0LjE2NjcgNjQuNTgzM0M1NC4xNjY3IDcxLjQ4NjkgNTkuNzYzMSA3Ny4wODMzIDY2LjY2NjcgNzcuMDgzM1oiIGZpbGw9InVybCgjcGFpbnQ0X2xpbmVhcl80MDhfMjYpIi8+DQo8cGF0aCBkPSJNNjYuNjY2NyA3Mi45MTY3QzcxLjI2OSA3Mi45MTY3IDc1IDY5LjE4NTcgNzUgNjQuNTgzM0M3NSA1OS45ODEgNzEuMjY5IDU2LjI1IDY2LjY2NjcgNTYuMjVDNjIuMDY0MyA1Ni4yNSA1OC4zMzMzIDU5Ljk4MSA1OC4zMzMzIDY0LjU4MzNDNTguMzMzMyA2OS4xODU3IDYyLjA2NDMgNzIuOTE2NyA2Ni42NjY3IDcyLjkxNjdaIiBmaWxsPSJ3aGl0ZSIvPg0KPHBhdGggZD0iTTY2LjY2NjcgNjguNzVDNjguOTY3OSA2OC43NSA3MC44MzMzIDY2Ljg4NDUgNzAuODMzMyA2NC41ODMzQzcwLjgzMzMgNjIuMjgyMSA2OC45Njc5IDYwLjQxNjcgNjYuNjY2NyA2MC40MTY3QzY0LjM2NTUgNjAuNDE2NyA2Mi41IDYyLjI4MjEgNjIuNSA2NC41ODMzQzYyLjUgNjYuODg0NSA2NC4zNjU1IDY4Ljc1IDY2LjY2NjcgNjguNzVaIiBmaWxsPSJ1cmwoI3BhaW50NV9saW5lYXJfNDA4XzI2KSIvPg0KPHBhdGggZD0iTTMzLjMzMzMgNzIuOTE2N0MzNy45MzU3IDcyLjkxNjcgNDEuNjY2NyA2OS4xODU3IDQxLjY2NjcgNjQuNTgzM0M0MS42NjY3IDU5Ljk4MSAzNy45MzU3IDU2LjI1IDMzLjMzMzMgNTYuMjVDMjguNzMxIDU2LjI1IDI1IDU5Ljk4MSAyNSA2NC41ODMzQzI1IDY5LjE4NTcgMjguNzMxIDcyLjkxNjcgMzMuMzMzMyA3Mi45MTY3WiIgZmlsbD0id2hpdGUiLz4NCjxwYXRoIGQ9Ik0zMy4zMzMzIDY4Ljc1QzM1LjYzNDUgNjguNzUgMzcuNSA2Ni44ODQ1IDM3LjUgNjQuNTgzM0MzNy41IDYyLjI4MjEgMzUuNjM0NSA2MC40MTY3IDMzLjMzMzMgNjAuNDE2N0MzMS4wMzIxIDYwLjQxNjcgMjkuMTY2NyA2Mi4yODIxIDI5LjE2NjcgNjQuNTgzM0MyOS4xNjY3IDY2Ljg4NDUgMzEuMDMyMSA2OC43NSAzMy4zMzMzIDY4Ljc1WiIgZmlsbD0idXJsKCNwYWludDZfbGluZWFyXzQwOF8yNikiLz4NCjxwYXRoIGQ9Ik01MCAyMC44MzMzQzUyLjMwMTIgMjAuODMzMyA1NC4xNjY3IDE4Ljk2NzkgNTQuMTY2NyAxNi42NjY3QzU0LjE2NjcgMTQuMzY1NSA1Mi4zMDEyIDEyLjUgNTAgMTIuNUM0Ny42OTg4IDEyLjUgNDUuODMzMyAxNC4zNjU1IDQ1LjgzMzMgMTYuNjY2N0M0NS44MzMzIDE4Ljk2NzkgNDcuNjk4OCAyMC44MzMzIDUwIDIwLjgzMzNaIiBmaWxsPSIjMTk5QkUyIi8+DQo8ZGVmcz4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl80MDhfMjYiIHgxPSI1MCIgeTE9IjE4Ljk3NzEiIHgyPSI1MCIgeTI9IjI4LjI2NjciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwMDc3RDIiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQxX2xpbmVhcl80MDhfMjYiIHgxPSI5LjM3NDk4IiB5MT0iNTUuNjYwNCIgeDI9IjkuMzc0OTgiIHkyPSI4Ny4wNTQyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDNCM0ZGIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50Ml9saW5lYXJfNDA4XzI2IiB4MT0iOTAuNjI1IiB5MT0iNTUuNjYwNCIgeDI9IjkwLjYyNSIgeTI9Ijg3LjA1NDIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwM0IzRkYiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQzX2xpbmVhcl80MDhfMjYiIHgxPSIzMy4zMzMzIiB5MT0iNTIuMTk1OCIgeDI9IjMzLjMzMzMiIHkyPSI5MC42MTQ2IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3N0QyIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50NF9saW5lYXJfNDA4XzI2IiB4MT0iNjYuNjY2NyIgeTE9IjUyLjE5NTgiIHgyPSI2Ni42NjY3IiB5Mj0iOTAuNjE0NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPg0KPHN0b3Agc3RvcC1jb2xvcj0iIzAwNzdEMiIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMEI1OUEyIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzQwOF8yNiIgeDE9IjY2LjY2NjciIHkxPSI1Mi4xOTU4IiB4Mj0iNjYuNjY2NyIgeTI9IjkwLjYxNDYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4NCjxzdG9wIHN0b3AtY29sb3I9IiMwM0IzRkYiLz4NCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBCNTlBMiIvPg0KPC9saW5lYXJHcmFkaWVudD4NCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQ2X2xpbmVhcl80MDhfMjYiIHgxPSIzMy4zMzMzIiB5MT0iNTIuMTk1OCIgeDI9IjMzLjMzMzMiIHkyPSI5MC42MTQ2IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjMDNCM0ZGIi8+DQo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQjU5QTIiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8L2RlZnM+DQo8L3N2Zz4NCg==
+  skippable_file_patterns:                    # skip these files from references
+    - ^_neuranet_generated?.+
+    - ^\.system?.+
+endpoint: llmflow                             # the API endpoint - usually llmflow
+users: ["*"]                                  # the * means all users, else must be an array of user IDs
+admins:                                       # the admins for this app - they can train for example
+  - thecompany@tekmonks.com
+  - rvkapoor@tekmonks.com     
+api_uploads_cms_path: uploads                 # where files are uploaded by index, unindex APIs
+generated_files_path: _neuranet_generated     # where generated files are placed
+ai_cost_quota: 0.6                            # cost quota for the users, -1 disables checks also
+disable_quota_checks: true                    # disable quotas if true
+disable_model_usage_logging: true             # if true, ai model usage logging
+default_embeddings_model: embedding-openai    # model for embedding file ingestion
+ingestiondbs: ["nntfidfdb", "nnvectordb"]     # the ingestion databases - tf.idf and vector in this case
+
+# all flows are sequence of commands which follow the same syntax - command, in, out - in is the input
+# to the command, out is the variable holding the output and name points to the command module and entry
+# point. the command sytax is documented below as well.
+
+pregen_flow: 
+  - command: rephrasedoc                      # entry function name is skipped as the default is generate anyways
+    in: 
+      label: Rephrased
+
+      prompt: |                               # these can be prompt, prompt_docISOLanguage, prompt_fragment_fragmentISOLanguage
+        Rephrase the document below with alternate keywords.
+        {{{fragment}}}
+      prompt_hi: |
+        नीचे दिए गए दस्तावेज़ को वैकल्पिक कीवर्ड के साथ पुनः लिखें।
+        {{{fragment}}}
+
+      models: 
+        - name: simplellm-openai
+          type: chat
+          model_overrides:                    # this allows us to override model params on a per AI app basis, can be a nested path e.g. driver.host if we are calling API at a different host name etc          
+        - name: embedding-openai
+          type: embeddings
+          model_overrides:                      
+      pregenfile_prefix: reworded
+      pregenfile_dir: _neuranet_generated
+      pregenfile_ext: txt
+      encoding: utf8
+
+
+llm_flow:   
+  - command: asbagent                       # default function entry is answer so entry function name is skipped
+    in: 
+      session_id: "{{{request.session_id}}}" 
+      message_id: "{{{request.message_id}}}"
+      question: "{{{query}}}"
+      raw_question: "{{{query}}}"
+      aiappid: "{{{aiappid}}}"
+      code_max_retries: 3
+      cutoff_score_tfidf: 0.4
+      chunk_size: 128000
+      matchers_for_reference_links: 
+        - (?:.+\/)?_neuranet_generated\/summary_(.+)\.txt
+        - (?:.+\/)?_neuranet_generated\/reworded_(.+)\.txt
+      files_js: return request.files
+      tmp_dir_name: /tempdir/
+      model: {"name": "chat-knowledgebase-openai"}
+
+      asbflow:
+        flow:
+          name: Knowledge lake chat using ASB
+          expandRouteProperties: true
+          ignorefatalerrors: true
+
+        listener:
+          type: inproc_listener
+          isMessageGenerator: true
+
+        route.expand_query:
+          type: js
+          dependencies:
+            - listener
+          isAsync: true
+          js: |
+            const expandqueryPlugin = await message.content.getPlugin("expandquery");
+            const prompt = message.content.getPrompt("expand_query_prompt");
+            const params = {...message.content, model: {name: "simplellm-openai"}, prompt};
+            message.content.searchquery = await expandqueryPlugin.expand(params);
+        
+        route.doctfidfsearch:
+          type: js
+          dependencies: [[route.expand_query],[route.expand_query.error]]
+          isAsync: true
+          js: |
+            const content = message.content, docsearchmod = await content.getPlugin("doctfidfsearch");
+            message.content.documents = await docsearchmod.search({...content, topK: 3,
+              query: content.searchquery||content.query,  // if expand query failed, then use content.query which is the original question
+              embeddings_model: {name: "embedding-openai"}, 
+              bridges: content.request.bridges||[content.aiappid], 
+              metadata_filter_function: content.request.metadata_filter_function, 
+              punish_verysmall_documents: content.request.punish_verysmall_documents !== undefined ? 
+                content.request.punish_verysmall_documents : false, 
+              bm25: content.request.bm25 !== undefined ? content.request.bm25 : false});
+
+        route.llm_history_chat:
+          type: js
+          dependencies:
+            - route.doctfidfsearch
+          isAsync: true
+          js: |
+            const prompt = message.content.getPrompt("llm_history_chat_prompt");
+            const chatmod = await message.content.getPlugin("llm_history_chat");
+            const matchers_for_reference_links = ["(?:.+\/)?_neuranet_generated\/summary_(.+)\.txt", 
+              "(?:.+\/)?_neuranet_generated\/reworded_(.+)\.txt"];
+            message.content.airesponse = await chatmod.answer({...message.content, 
+              model: {name: "chat-knowledgebase-openai"}, matchers_for_reference_links, 
+              question: message.content.query, prompt});
+
+        output:
+          type: inproc_responder
+          dependencies : [[route.llm_history_chat],[route.llm_history_chat.error],[route.doctfidfsearch.error]]
+          
+    out: airesponse                         # the final response must output to this property - airesponse for LLM flows
+
+
+global_models:
+  - name: embedding-openai
+    model_overrides:                    
+      read_ai_response_from_samples: true
+
+  - name: chat-knowledgebase-openai
+    model_overrides:                    
+      read_ai_response_from_samples: true
+
+  - name: simplellm-openai
+    model_overrides:                    
+      read_ai_response_from_samples: true
+
+
+modules: 
+  llm_history_chat: llm_history_chat.js

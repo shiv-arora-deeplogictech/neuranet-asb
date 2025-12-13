@@ -18,7 +18,7 @@ import {monkshu_component} from "/framework/js/monkshu_component.mjs";
 const COMPONENT_PATH = util.getModulePathFromURL(import.meta.url), DEFAULT_MAX_ATTACH_SIZE = 4194304, 
     DEFAULT_MAX_ATTACH_SIZE_ERROR = "File size is larger than allowed size";
 
-let MUSTACHE;
+let MUSTACHE, last_message_id;
 
 async function elementConnected(host) {
     const ATTACHMENT_ALLOWED = host.getAttribute("attach")?.toLowerCase() == "true";
@@ -51,13 +51,13 @@ async function send(containedElement) {
     buttonSendImg.src = `${COMPONENT_PATH}/img/spinner.svg`; userMessageArea.readOnly = true;
 
     // insert the user's message
-    const message_id = `${Date.now()}${Math.floor(Math.random() * 1000) + 1}`;
+    const message_id = `${Date.now()}${Math.floor(Math.random() * 1000) + 1}`; last_message_id = message_id;
     _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id);
     
     // send the message to the backend to get a response
     const onRequest = host.getAttribute("onrequest"); 
     const wrappedChatBox = {
-        insertAIResponse: async (processedResult, message_id) => {
+        insertAIResponse: async (processedResult, message_id=last_message_id) => {
             await _insertAIResponse(shadowRoot, processedResult[processedResult.ok?"response":"error"], processedResult.mime, message_id);
             if (!processedResult.ok) {  // sending more messages is now disabled as this chat is dead due to error
                 buttonSendImg.onclick = ''; buttonSendImg.src = `${COMPONENT_PATH}/img/senddisabled.svg`;
@@ -67,9 +67,9 @@ async function send(containedElement) {
                 userMessageArea.readOnly = false;
             }   
         },
-        insertAIThoughts: (thoughts, thoughts_mime, message_id) => _insertAIThoughts(shadowRoot, thoughts, thoughts_mime, message_id),
+        insertAIThoughts: (thoughts, thoughts_mime, message_id=last_message_id) => _insertAIThoughts(shadowRoot, thoughts, thoughts_mime, message_id),
         getCollapsibleSection: (title, content) => _getCollapsibleSection(containedElement, title, content),
-        getAIContent: message_id => _getAIResponseContent(shadowRoot, message_id)||""
+        getAIContent: message_id => _getAIResponseContent(shadowRoot, message_id=last_message_id)||""
     }
     const requestProcessor = util.createAsyncFunction(`return await ${onRequest};`);
     requestProcessor({chatbox: wrappedChatBox, message_id, prompt: userPrompt, files: _getMemory(containedElement).FILES_ATTACHED});
@@ -161,7 +161,7 @@ function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     _detachAllFiles(shadowRoot, false);  // clear file attachments
 }
 
-function _insertAIThoughts(shadowRoot, thoughts, thoughts_mime="text/markdown", message_id) {
+function _insertAIThoughts(shadowRoot, thoughts, thoughts_mime="text/markdown", message_id=last_message_id) {
     const insertion = shadowRoot.querySelector(`div.insertiondiv#c${message_id}`);
     if (!insertion) return;
     const elementCollapsibleContainer = insertion.querySelector("div.collapsiblecontainer#aithoughtsection");
@@ -176,7 +176,7 @@ function _insertAIThoughts(shadowRoot, thoughts, thoughts_mime="text/markdown", 
     chatScroller.scrollTop = chatScroller.scrollHeight;
 }
 
-async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/markdown", message_id) {
+async function _insertAIResponse(shadowRoot, aiResponse, aiReponseMime="text/markdown", message_id=last_message_id) {
     // insert current prompt and/or reply
     const insertion = shadowRoot.querySelector(`div.insertiondiv#c${message_id}`);
     if (!insertion) return;

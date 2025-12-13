@@ -1,0 +1,39 @@
+## Contains various prompts. The ASB plugin reads and attaches the object to the message.
+## Convention is [prompt_key]_[lang] eg expand_query_prompt_zh is the prompt to expand the
+## query if the user is using the Chinese language. If the same prompt should be used for 
+## all languages then language spec can be skipped.
+
+---
+expand_query_prompt: |
+  Given the previous conversation and a new question, rephrase the new question's pronouns with nouns and add keywords.
+  If the previous questions are not relevant to this question, then do not rephrase and return the new question without modification.
+  Previous conversation:
+  {{#session}}
+  {{{role}}}: {{{content}}}
+  {{/session}}
+
+  New question: {{{question}}}
+
+  The rephrased question is:
+
+llm_history_chat_prompt: |
+  Answer the following question only using the documents provided below. 
+  {{#files.length}}Also use information from the files attached.{{/files.length}}
+
+  {{#files.length}}Files attached:{{/files.length}}
+  {{#files}}
+  Filename: {{{filename}}}
+  {{{text}}}
+
+  {{/files}}
+
+  Documents:
+  {{#documents}}
+  {{{content}}}
+
+  {{/documents}}
+
+  Question:
+  {{{question}}}
+
+  The answer is:
