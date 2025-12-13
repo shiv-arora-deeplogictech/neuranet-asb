@@ -101,6 +101,15 @@ llm_flow:
           dependencies: [[route.expand_query],[route.expand_query.error]]
           isAsync: true
           js: |
+            /** The code below is on purpose to show how to run retry and other very
+            /** advanced AI routing loops inside the ASB flow. Uncomment to see how it works. 
+            if (message.getGCEligibleCounter() === undefined) { // test rerouting loop
+              message.setGCEligibleCounter(1);        // go around once more
+              message.modifyRouteStamp(["listener"]); // starting from the expansion node as it expects listener messages
+              return;
+            } else message.decrementGCEligibleCounter();  // stops the loop
+            **/
+
             const content = message.content, docsearchmod = await content.getPlugin("doctfidfsearch");
             message.content.documents = await docsearchmod.search({...content, topK: 3,
               query: content.searchquery||content.query,  // if expand query failed, then use content.query which is the original question
