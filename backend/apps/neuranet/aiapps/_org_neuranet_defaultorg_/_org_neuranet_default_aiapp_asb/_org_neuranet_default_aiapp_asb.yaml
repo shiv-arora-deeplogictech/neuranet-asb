@@ -102,7 +102,8 @@ llm_flow:
           isAsync: true
           js: |
             /** The code below is on purpose to show how to run retry and other very
-            /** advanced AI routing loops inside the ASB flow. Uncomment to see how it works. 
+            /** advanced AI routing loops, including graph routing, inside the ASB flow. 
+            /** Uncomment to see how it works. 
             if (message.getGCEligibleCounter() === undefined) { // test rerouting loop
               message.setGCEligibleCounter(1);        // go around once more
               message.modifyRouteStamp(["listener"]); // starting from the expansion node as it expects listener messages
