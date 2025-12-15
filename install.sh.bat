@@ -17,3 +17,8 @@ npm install yaml
 npm install wordcut
 npm install nodemailer
 npm install nodemailer-mailgun-transport
+npm install line-by-line 
+npm install fast-xml-parser 
+npm install cron 
+npm install ssh2 
+npm install imapflow 

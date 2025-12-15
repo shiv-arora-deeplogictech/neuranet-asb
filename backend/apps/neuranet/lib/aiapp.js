@@ -27,6 +27,7 @@ exports.initSync = _ => {
     }
     BLACKBOARD.subscribe(BB_MESSAGE_KEY_PUBLISH, message => sendToIfNotSeen(message, _pushAIAppViewForOrg, [message.id, message.org, message.aiappid, message.frontend_relative_webroot]));
     BLACKBOARD.subscribe(BB_MESSAGE_KEY_UNPUBLISH, message => sendToIfNotSeen(message, _deleteAIAppViewForOrg, [message.id, message.org, message.aiappid, message.frontend_relative_webroot]));
+    _initAIApps();
 }
 
 /**
@@ -429,4 +430,16 @@ async function _deleteAIAppViewForOrg(id, org, aiappid, frontend_relative_webroo
     const appFrontendDir = path.resolve(`${CONSTANTS.FRONTENDDIR}/${frontend_relative_webroot}`);
     const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${org}/${aiappid}`;
     try {serverutils.rmrf(viewDir);} catch (err) {LOG.error(`Error ${err} deleting view from the frontend for for app ID ${aiappid} for org ${org}`)}
+}
+
+async function _initAIApps() {
+    for (const org of await fspromises.readdir(NEURANET_CONSTANTS.AIAPPDIR)) {
+        if (org == NEURANET_CONSTANTS.DEFAULT_ORG) continue;    // these are templates
+        if (!(await fspromises.stat(`${NEURANET_CONSTANTS.AIAPPDIR}/${org}`)).isDirectory()) continue;  // not a proper org
+        
+        for (const aiappid of await fspromises.readdir(`${NEURANET_CONSTANTS.AIAPPDIR}/${org}`)) {
+            const initFile = `${NEURANET_CONSTANTS.AIAPPDIR}/${org}/${aiappid}/init.js`;
+            if (await serverutils.exists(initFile)) require(initFile).initAsync(org, aiappid);
+        }
+    }
 }

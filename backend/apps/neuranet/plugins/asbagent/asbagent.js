@@ -35,16 +35,25 @@ const asb = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/asb/lib/main.js`);
 const pluginhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/pluginhandler.js`);
 const llmflowrunner = require(`${NEURANET_CONSTANTS.LIBDIR}/llmflowrunner.js`);
 const langdetector = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/langdetector.js`);
-const asb_in_proc_listener = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/asb/listeners/inproc_listener.js`);
 
 const REASONS = llmflowrunner.REASONS, FILE_CACHE = {};
 
 let ASB_BOOTSTRAPPED = false; if (!ASB_BOOTSTRAPPED) {asb.bootstrap(true); ASB_BOOTSTRAPPED=true;}
 let flows_running = [];
 
+exports.init = aiapp => {
+    const aiappid = aiapp.id, asbflow = aiapp.llm_flow[0].in.asbflow;
+    const inProcListener = _findInProcListener(asbflow);
+    if (!flows_running.includes(aiappid)) {
+        if (inProcListener) inProcListener.id = aiappid;   // add ID to the listener matching the app ID
+        asb.addFlow(asbflow); flows_running.push(aiappid);
+    }
+}
+
 exports.answer = async (params) => {
+    const inProcListener = _findInProcListener(params.asbflow);
     if (!flows_running.includes(params.aiappid)) {
-        params.asbflow.listener.id = params.aiappid;   // add ID to the listener matching the app ID
+        if (inProcListener) inProcListener.id = params.aiappid;   // add ID to the listener matching the app ID
         asb.addFlow(params.asbflow); flows_running.push(params.aiappid);
     }
 
@@ -91,12 +100,16 @@ exports.answer = async (params) => {
         aimodelobject: aiModelObject, aikey: aiKey, ailibrary: aiLibrary, simplellmcall, llmchatcall, 
         simplellm, llmchat, emit_thought, prompts, getPrompt, getPlugin};
 
-    return new Promise(resolve => {
-        asb_in_proc_listener.inject(params.aiappid, {messageContent, responseReceiver: response => {
+    if (inProcListener) return new Promise(resolve => {
+        inProcListener.inject(params.aiappid, {messageContent, responseReceiver: response => {
             if (response && response.airesponse) {
                 const airesponse = response.airesponse;
                 resolve(airesponse);
             } else resolve({reason: REASONS.INTERNAL, ...CONSTANTS.FALSE_RESULT});
         }})
-    });
+    }); else return({reason: REASONS.NOTCHATAI, ...CONSTANTS.FALSE_RESULT}); // else this is not a chatting AI
+}
+
+function _findInProcListener(flowNodes) {
+    for (const nodename of Object.keys(flowNodes))  if (flowNodes[nodename].type == "inproc_listener") return flowNodes[nodename];
 }
