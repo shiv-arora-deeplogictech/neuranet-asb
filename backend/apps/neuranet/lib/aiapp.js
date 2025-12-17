@@ -86,7 +86,7 @@ exports.getAIApp = async function(id, org, aiappid, forcecache) {
 
     try {
         const appFile = exports.getAppFile(id, org, aiappid), appFileYaml = await fspromises.readFile(appFile, "utf8"),
-            app = yaml.parse(appFileYaml); APP_CACHE[appCacheKey] = app;
+            app = yaml.parse(appFileYaml); app.org = org; APP_CACHE[appCacheKey] = app;
         return APP_CACHE[appCacheKey];
     } catch (err) { // app file parsing issue
         if (!NEURANET_CONSTANTS.CONF.dynamic_aiapps) {  // dynamic apps not supported, we can't do anything else

@@ -15,7 +15,7 @@ const SPECIAL_KEY_SUFFIXES = [NOINFLATE, JSCODE];
 
 /** Response reasons for LLM flows */
 exports.REASONS = {INTERNAL: "internal", BAD_MODEL: "badmodel", OK: "ok", VALIDATION:"badrequest", 
-    LIMIT: "limit", NOKNOWLEDGE: "noknowledge", NOTCHATAI: "notchatai"};
+    LIMIT: "limit", NOKNOWLEDGE: "noknowledge", NOTCHATAI: "notchatai", NO_JOB: "nojob"};
 
 exports.DEFAULT_LLM_FLOW = "llm_flow";
 

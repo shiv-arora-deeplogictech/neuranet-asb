@@ -22,20 +22,37 @@
  */
 
 const aiapp = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
+const timedcache = require(`${CONSTANTS.LIBDIR}/timedcache.js`);
 const brainhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/brainhandler.js`);
 const llmflowrunner = require(`${NEURANET_CONSTANTS.LIBDIR}/llmflowrunner.js`);
+
+const TIMED_CACHE = timedcache.newcache(NEURANET_CONSTANTS.CONF.apicache_expiry), STATUS_WAITING = "waiting";
 
 exports.doService = async (jsonReq, _servObject, _headers, _url) => {
 	if (!validateRequest(jsonReq)) {
         LOG.error("Validation failure."); return {reason: llmflowrunner.REASONS.VALIDATION, ...CONSTANTS.FALSE_RESULT};}
 
-	LOG.debug(`Got knowledge base chat request from ID ${jsonReq.id}. Incoming request is ${JSON.stringify(jsonReq)}`);
+	LOG.debug(`Got a chat request from ID ${jsonReq.id}. Incoming request is ${JSON.stringify(jsonReq)}`);
+    
+    let polledResponseID; if (jsonReq.jobrequest) {
+        polledResponseID = jsonReq.message_id; TIMED_CACHE.set(polledResponseID, {...CONSTANTS.TRUE_RESULT, status: STATUS_WAITING});
+        _getResult(); return TIMED_CACHE.get(jsonReq.message_id); 
+    }
+    if (jsonReq.jobresponse) {
+        if (TIMED_CACHE.get(jsonReq.message_id)) return TIMED_CACHE.get(jsonReq.message_id); 
+        else return {reason: llmflowrunner.REASONS.NO_JOB, ...CONSTANTS.FALSE_RESULT}; // we do not know of this job
+    }
 
-    const extraInfo = brainhandler.createExtraInfo(jsonReq.id, jsonReq.org.toLowerCase(), jsonReq.aiappid);
-    const aiappid = await aiapp.getAppID(jsonReq.id, jsonReq.org.toLowerCase(), extraInfo);
-    const result = await llmflowrunner[aiapp.DEFAULT_ENTRY_FUNCTIONS.llm_flow](
-        jsonReq.question, jsonReq.id, jsonReq.org, aiappid, jsonReq, jsonReq.flow||llmflowrunner.DEFAULT_LLM_FLOW);
-    return result;
+    const _getResult = async _ => { 
+        const extraInfo = brainhandler.createExtraInfo(jsonReq.id, jsonReq.org.toLowerCase(), jsonReq.aiappid);
+        const aiappid = await aiapp.getAppID(jsonReq.id, jsonReq.org.toLowerCase(), extraInfo);
+        const result = await llmflowrunner[aiapp.DEFAULT_ENTRY_FUNCTIONS.llm_flow](
+            jsonReq.question, jsonReq.id, jsonReq.org, aiappid, jsonReq, jsonReq.flow||llmflowrunner.DEFAULT_LLM_FLOW);
+        
+        if (!polledResponseID) return result; else TIMED_CACHE.set(polledResponseID, result);
+    }
+
+    return await _getResult();  // coming here means no job control was specified so just run the request and return the results
 }
 
 const validateRequest = jsonReq => (jsonReq && jsonReq.id && jsonReq.question && jsonReq.org);

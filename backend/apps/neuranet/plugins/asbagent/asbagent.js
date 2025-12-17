@@ -26,7 +26,7 @@
 const yaml = require("yaml");
 const fspromises = require("fs").promises;
 const utils = require(`${CONSTANTS.LIBDIR}/utils.js`);
-const aiapp = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
+const aiappMod = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
 const llmchat = require(`${NEURANET_CONSTANTS.LIBDIR}/llmchat.js`);
 const sseevents = require(`${NEURANET_CONSTANTS.APIDIR}/sseevents.js`);
 const simplellm = require(`${NEURANET_CONSTANTS.LIBDIR}/simplellm.js`);
@@ -35,15 +35,17 @@ const asb = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/asb/lib/main.js`);
 const pluginhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/pluginhandler.js`);
 const llmflowrunner = require(`${NEURANET_CONSTANTS.LIBDIR}/llmflowrunner.js`);
 const langdetector = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/langdetector.js`);
+const asb_in_proc_listener = require(`${NEURANET_CONSTANTS.THIRDPARTYDIR}/asb/listeners/inproc_listener.js`);
 
-const REASONS = llmflowrunner.REASONS, FILE_CACHE = {};
+const REASONS = llmflowrunner.REASONS, FILE_CACHE = {}, ASBAGENT_PLUGIN_NAME = "asbagent";
 
 let ASB_BOOTSTRAPPED = false; if (!ASB_BOOTSTRAPPED) {asb.bootstrap(true); ASB_BOOTSTRAPPED=true;}
 let flows_running = [];
 
-exports.init = aiapp => {
-    const aiappid = aiapp.id, asbflow = aiapp.llm_flow[0].in.asbflow;
-    const inProcListener = _findInProcListener(asbflow);
+exports.initAsync = async aiapp => {
+    const aiappid = aiapp.id, asbflow = (await _getASBAgentObject(aiapp)).in.asbflow;
+    const inProcListener = await _findInProcListener(asbflow);
+    asbflow.env = {asbagent_params: await _findASBPluginParams(aiapp)};
     if (!flows_running.includes(aiappid)) {
         if (inProcListener) inProcListener.id = aiappid;   // add ID to the listener matching the app ID
         asb.addFlow(asbflow); flows_running.push(aiappid);
@@ -52,11 +54,31 @@ exports.init = aiapp => {
 
 exports.answer = async (params) => {
     const inProcListener = _findInProcListener(params.asbflow);
+    if (!inProcListener) return({reason: REASONS.NOTCHATAI, ...CONSTANTS.FALSE_RESULT}); // else this is not a chatting AI
+
     if (!flows_running.includes(params.aiappid)) {
-        if (inProcListener) inProcListener.id = params.aiappid;   // add ID to the listener matching the app ID
+        inProcListener.id = params.aiappid;   // add ID to the listener matching the app ID
         asb.addFlow(params.asbflow); flows_running.push(params.aiappid);
     }
 
+    // the thought is that the message.content passed to the ASB in-process contains everything needed 
+    // for AI calls - to make the ASB nodes easier to code
+    const messageContent = await exports.getMessageContent(params);
+    if ((messageContent.result !== undefined) && (!messageContent.result)) return messageContent;     // error
+
+    return new Promise(resolve => {
+        asb_in_proc_listener.inject(params.aiappid, {messageContent, responseReceiver: response => {
+            if (response && response.airesponse) {
+                const airesponse = response.airesponse;
+                resolve(airesponse);
+            } else resolve({reason: REASONS.INTERNAL, ...CONSTANTS.FALSE_RESULT});
+        }})
+    });
+}
+
+exports.injectNeuranetData = async message => message.content = {...message.content, ...(await _getMessageContent(message.flow.params))}
+
+exports.getMessageContent = async params => {
     if (!(await llmchat.check_quota(params.id, params.org, params.aiappid))) {
 		LOG.error(`Disallowing the LLM chat call, as the user ${params.id} is over their quota.`);
 		return {reason: REASONS.LIMIT, ...CONSTANTS.FALSE_RESULT};
@@ -82,7 +104,7 @@ exports.answer = async (params) => {
     const filesAttached = await llmdocchat.getFilesForPrompt(params.files);
     const languageDetectedForQuestion =  langdetector.getISOLang(params.question||params.raw_question);
 
-    const promptsFile = `${aiapp.getAppDir(params.id, params.org, params.aiappid)}/prompts.yaml`;
+    const promptsFile = `${aiappMod.getAppDir(params.id, params.org, params.aiappid)}/prompts.yaml`;
     let prompts; try { prompts = FILE_CACHE[promptsFile] || ( (await utils.exists(promptsFile)) ? 
         yaml.parse(await fspromises.readFile(promptsFile, "utf-8")) : undefined ); }
     catch (err) { LOG.error(`Bad prompts file ${promptsFile} for org ${params.org} and aiapp ${params.aiappid}`); 
@@ -91,7 +113,7 @@ exports.answer = async (params) => {
     const getPrompt = key => prompts ? (prompts[`${key}_${languageDetectedForQuestion}`] || prompts[key]) : undefined;
 
     const emit_thought = thought => sseevents.emitThought(params.id, params.org, params.message_id, thought);
-    const getPlugin = name => aiapp.getCommandModule(params.id, params.org, params.aiappid, name);
+    const getPlugin = name => aiappMod.getCommandModule(params.id, params.org, params.aiappid, name);
 
     // the thought is that the message.content passed to the ASB in-process contains everything needed 
     // for AI calls - to make the ASB nodes easier to code
@@ -99,15 +121,21 @@ exports.answer = async (params) => {
         lang: languageDetectedForQuestion, session: finalSessionObject, aimodeltouse: aiModelToUse, 
         aimodelobject: aiModelObject, aikey: aiKey, ailibrary: aiLibrary, simplellmcall, llmchatcall, 
         simplellm, llmchat, emit_thought, prompts, getPrompt, getPlugin};
+    return messageContent;
+}
 
-    if (inProcListener) return new Promise(resolve => {
-        inProcListener.inject(params.aiappid, {messageContent, responseReceiver: response => {
-            if (response && response.airesponse) {
-                const airesponse = response.airesponse;
-                resolve(airesponse);
-            } else resolve({reason: REASONS.INTERNAL, ...CONSTANTS.FALSE_RESULT});
-        }})
-    }); else return({reason: REASONS.NOTCHATAI, ...CONSTANTS.FALSE_RESULT}); // else this is not a chatting AI
+async function _findASBPluginParams(aiapp) {
+    const asbPluginParams = (await _getASBAgentObject(aiapp)).in || {}; 
+    asbPluginParams.aiappid = aiapp.id; asbPluginParams.asbagent = module.exports; 
+    asbPluginParams.id = aiapp.unattended_id; asbPluginParams.org = aiapp.org;
+    return asbPluginParams;
+}
+
+async function _getASBAgentObject(aiapp) {
+    const llm_flow = await aiappMod.getAIAppObject(aiapp.unattended_id, aiapp.org, aiapp.id, "llm_flow");
+    for (const flowNode of llm_flow) 
+        if (flowNode.command?.toLowerCase() == ASBAGENT_PLUGIN_NAME) return flowNode;
+    return undefined;
 }
 
 function _findInProcListener(flowNodes) {
