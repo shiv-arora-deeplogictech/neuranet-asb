@@ -22,3 +22,4 @@ npm install fast-xml-parser
 npm install cron 
 npm install ssh2 
 npm install imapflow 
+npm install marked

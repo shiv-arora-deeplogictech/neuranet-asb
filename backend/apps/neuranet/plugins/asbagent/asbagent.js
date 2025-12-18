@@ -13,6 +13,9 @@
  *							  aiappid - The calling ai app
  *                            model - The recommended AI model to use for the flow (could be ignored by some steps)
  *                            flow - The AI flow to run
+ *                            query - The question
+ *                            tmp_dir_name - Temp directory we can use
+ *                            code_max_retries - Max retries for code
  * 
  * @returns {Object} The Response is an object
  *  	                 result - true or false
@@ -21,11 +24,14 @@
  *  	                 session_id - the session ID which can be used to ask backend to maintain sessions
  *  	                 metadatas - If applicable, the response document metadatas. Typically metadata. 
  *                                   Referencelink points to the exact document
+ * 
+ * (C) 2025 TekMonks. All rights reserved.
  */
 
 const yaml = require("yaml");
 const fspromises = require("fs").promises;
 const utils = require(`${CONSTANTS.LIBDIR}/utils.js`);
+const mdconverter = require(`${__dirname}/mdconverter.js`);
 const aiappMod = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
 const llmchat = require(`${NEURANET_CONSTANTS.LIBDIR}/llmchat.js`);
 const sseevents = require(`${NEURANET_CONSTANTS.APIDIR}/sseevents.js`);
@@ -61,7 +67,7 @@ exports.answer = async (params) => {
         asb.addFlow(params.asbflow); flows_running.push(params.aiappid);
     }
 
-    // the thought is that the message.content passed to the ASB in-process contains everything needed 
+    // the thought here is that the message.content passed to the ASB in-process contains everything needed 
     // for AI calls - to make the ASB nodes easier to code
     const messageContent = await exports.getMessageContent(params);
     if ((messageContent.result !== undefined) && (!messageContent.result)) return messageContent;     // error
@@ -114,13 +120,14 @@ exports.getMessageContent = async params => {
 
     const emit_thought = thought => sseevents.emitThought(params.id, params.org, params.message_id, thought);
     const getPlugin = name => aiappMod.getCommandModule(params.id, params.org, params.aiappid, name);
+    const md2html = mdconverter.md2html, md2text = mdconverter.md2text;
 
     // the thought is that the message.content passed to the ASB in-process contains everything needed 
     // for AI calls - to make the ASB nodes easier to code
     const messageContent = {...params, session_id: sessionID, filesAttached,
         lang: languageDetectedForQuestion, session: finalSessionObject, aimodeltouse: aiModelToUse, 
         aimodelobject: aiModelObject, aikey: aiKey, ailibrary: aiLibrary, simplellmcall, llmchatcall, 
-        simplellm, llmchat, emit_thought, prompts, getPrompt, getPlugin};
+        simplellm, llmchat, emit_thought, prompts, getPrompt, getPlugin, md2html, md2text, reasons: llmflowrunner.REASONS};
     return messageContent;
 }
 
@@ -139,5 +146,6 @@ async function _getASBAgentObject(aiapp) {
 }
 
 function _findInProcListener(flowNodes) {
-    for (const nodename of Object.keys(flowNodes))  if (flowNodes[nodename].type == "inproc_listener") return flowNodes[nodename];
+    for (const nodename of Object.keys(flowNodes)) 
+        if (flowNodes[nodename].type == "inproc_listener") return flowNodes[nodename];
 }

@@ -20,6 +20,7 @@ users: ["*"]                                  # the * means all users, else must
 admins:                                       # the admins for this app - they can train for example
   - thecompany@tekmonks.com
   - rvkapoor@tekmonks.com     
+unattended_id: rvkapoor@tekmonks.com          # ID for unattended operation - used by ASB plugin, for example
 api_uploads_cms_path: uploads                 # where files are uploaded by index, unindex APIs
 generated_files_path: _neuranet_generated     # where generated files are placed
 ai_cost_quota: 0.6                            # cost quota for the users, -1 disables checks also
@@ -80,15 +81,38 @@ llm_flow:
           name: Knowledge lake chat using ASB
           expandRouteProperties: true
           ignorefatalerrors: true
+          cpuInterval: 1000
 
-        listener:
+        listener.inproc:
           type: inproc_listener
           isMessageGenerator: true
 
+        listener.email:
+          type: imap
+          isMessageGenerator: true
+          mailbox: INBOX
+          user: neuranet@tekmonks.com
+          password: 268e96dce29c2b126b610ed7a9e5649d323c2c156b16e85d
+          host: imap.gmail.com
+          port: 993
+          tls: true
+          maxmessages: 10
+          maxEmailSize: 20971520
+          partsToInject: ["envelope", "text", "attachments"]
+
+        route.convertemail:
+          type: js
+          dependencies: listener.email 
+          isAsync: true
+          js: |
+            const emailQuestion = (message.content.envelope.subject||"") + "\n" + message.content.texts.join("\n");
+            message.content.request = {}; message.content.query = emailQuestion; 
+            message.content.raw_question = emailQuestion; message.content.message_id = message.content.envelope.messageId;
+            message.content = await flow.env.asbagent_params.asbagent.getMessageContent({...flow.env.asbagent_params, ...message.content});
+            
         route.expand_query:
           type: js
-          dependencies:
-            - listener
+          dependencies: listener.inproc || route.convertemail
           isAsync: true
           js: |
             const expandqueryPlugin = await message.content.getPlugin("expandquery");
@@ -98,7 +122,7 @@ llm_flow:
         
         route.doctfidfsearch:
           type: js
-          dependencies: [[route.expand_query],[route.expand_query.error]]
+          dependencies: route.expand_query || route.expand_query.error
           isAsync: true
           js: |
             /** The code below is on purpose to show how to run retry and other very
@@ -110,7 +134,6 @@ llm_flow:
               return;
             } else message.decrementGCEligibleCounter();  // stops the loop
             **/
-
             const content = message.content, docsearchmod = await content.getPlugin("doctfidfsearch");
             message.content.documents = await docsearchmod.search({...content, topK: 3,
               query: content.searchquery||content.query,  // if expand query failed, then use content.query which is the original question
@@ -123,8 +146,7 @@ llm_flow:
 
         route.llm_history_chat:
           type: js
-          dependencies:
-            - route.doctfidfsearch
+          dependencies: route.doctfidfsearch
           isAsync: true
           js: |
             const prompt = message.content.getPrompt("llm_history_chat_prompt");
@@ -135,9 +157,31 @@ llm_flow:
               model: {name: "chat-knowledgebase-openai"}, matchers_for_reference_links, 
               question: message.content.query, prompt});
 
-        output:
+        route.emailreplycreator: 
+          type: js
+          dependencies: listener.email && (route.llm_history_chat || route.llm_history_chat.error || route.doctfidfsearch.error)
+          isAsync: true
+          js: |
+            const airesponse = message.content.airesponse || {result: false, reason: message.content.reasons.INTERNAL};
+            if (!airesponse.jsonResponse) airesponse.jsonResponse = {response: airesponse.response};  
+            message.content.html = airesponse.result ? message.content.md2html(airesponse.jsonResponse.response) : "Error";
+            message.content.text = airesponse.result ? message.content.md2text(airesponse.jsonResponse.response) : "Error";
+            message.content.to = `"${message.content.envelope.from[0].name||message.content.envelope.from[0].address}" <${message.content.envelope.from[0].address}>`;
+            message.content.title = `Re: ${message.content.envelope.subject}`;
+            message.content.from = `"Neuranet AI" <neuranet@tekmonks.com>`;
+
+        output.inproc:
           type: inproc_responder
-          dependencies : [[route.llm_history_chat],[route.llm_history_chat.error],[route.doctfidfsearch.error]]
+          dependencies : listener.inproc && (route.llm_history_chat || route.llm_history_chat.error || route.doctfidfsearch.error)
+
+        output.email:
+          type: email
+          dependencies : route.emailreplycreator
+          host: smtp.gmail.com
+          port: 587
+          secure: false
+          user: neuranet@tekmonks.com
+          password: 268e96dce29c2b126b610ed7a9e5649d323c2c156b16e85d
           
     out: airesponse                         # the final response must output to this property - airesponse for LLM flows
 

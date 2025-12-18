@@ -42,13 +42,14 @@ exports.answer = async function(query, id, org, aiappid, request, flow_section=e
         return {...CONSTANTS.FALSE_RESULT, error: `Error parsing app for ${aiappid}`, reason: exports.REASONS.INTERNAL};
     }
 
-    for (const llmflowCommandDefinition of llmflowCommands) {
+    const __notASBNodeCount = 0; for (const llmflowCommandDefinition of llmflowCommands) {
         if (llmflowCommandDefinition[CONDITION]||llmflowCommandDefinition[CONDITION_JS]) 
             llmflowCommandDefinition[CONDITION] = await _expandLLMFlowParam(llmflowCommandDefinition[CONDITION]?CONDITION:CONDITION_JS,
                 llmflowCommandDefinition[CONDITION]||llmflowCommandDefinition[CONDITION_JS], working_memory);
         if (llmflowCommandDefinition[CONDITION] !== undefined && (!llmflowCommandDefinition[CONDITION])) continue;  
 
         const [command, command_function] = llmflowCommandDefinition.command.split(".");
+        if (command != 'asbagent') __notASBNodeCount++;
         const llmflowModule = await aiapp.getCommandModule(id, org, aiappid, command);
         const callParams = {id, org, query, aiappid, request, 
             return_error: function(){working_memory.return_error(...arguments, working_memory)},
@@ -66,6 +67,8 @@ exports.answer = async function(query, id, org, aiappid, request, flow_section=e
             break;
         }
     }
+
+    if (__notASBNodeCount == llmflowCommands.length) for (let i = 0; i < 10; i++) LOG.warn(`****** [[SERIOUS!!!]] ${aiappid} NOT USING ASB FOR AI FLOWS - THIS IS NOT RECOMMENDED.`);
 
     if (!working_memory.__error) return {...CONSTANTS.TRUE_RESULT, ...(working_memory.airesponse||[])};
     else return {...CONSTANTS.FALSE_RESULT, error: working_memory.__error_message, reason: working_memory.__error_reason};
