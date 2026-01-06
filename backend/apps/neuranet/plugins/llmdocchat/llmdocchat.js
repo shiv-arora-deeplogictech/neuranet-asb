@@ -106,9 +106,8 @@ exports.getFilesForPrompt = async paramFiles => {
 		if (text) {
 			if (!filesForPrompt) filesForPrompt = []; 
 			filesForPrompt.push({filename: file.filename, text}); 
-			const metadataForReferenceThisFile = {}; 
-			metadataForReferenceThisFile[NEURANET_CONSTANTS.REFERENCELINK_METADATA_KEY] = file.filename;
-			metadatasForResponse.push(metadataForReferenceThisFile);
+			
 		}
 	}
+	return filesForPrompt;
 }
