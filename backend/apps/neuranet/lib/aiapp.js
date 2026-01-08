@@ -232,11 +232,11 @@ exports.initNewAIAppForOrg = async function(aiappid, label, id, org, template=NE
     try {
         let result = true; serverutils.walkFolder(defaultAppDir, async (fullpath, _stats, relativePath) => {
             if (!result) return;    // already failed, no point wasting time walking further
-            if (relativePath.toLowerCase().endsWith(".yaml")) relativePath = relativePath.replace(NEURANET_CONSTANTS.DEFAULT_ORG_DEFAULT_AIAPP, aiappid);    // replace app ID in path
+            if (_stats.isDirectory()) return;    // skip directories
+            if(relativePath.toLowerCase().endsWith(".yaml")) relativePath = relativePath.replace(template, aiappid);    // replace template ID with new app ID in path
             let fileContents = await fspromises.readFile(fullpath, "utf8");
             if (fullpath.toLowerCase().endsWith(".yaml")) fileContents = fileContents.replace(    // fix app IDs and labels
-                NEURANET_CONSTANTS.DEFAULT_ORG_DEFAULT_AIAPP, aiappid).replace(
-                    `label: ${NEURANET_CONSTANTS.DEFAULT_ORG_DEFAULT_AIAPP_LABEL}`, `label: ${label}`); 
+                template, aiappid);
             const fileBuffer = Buffer.from(fileContents, "utf8");
             result = await fileindexer.addFileToCMSRepository(id, org,  // app dir is CMS managed so this is needed
                 fileBuffer, relativePath, `AI app file for ${aiappid}`, brainhandler.createExtraInfo(
