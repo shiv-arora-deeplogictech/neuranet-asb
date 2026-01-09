@@ -13,6 +13,7 @@ const timedcache = require(`${CONSTANTS.LIBDIR}/timedcache.js`);
 const aiutils = require(`${NEURANET_CONSTANTS.LIBDIR}/aiutils.js`);
 const dblayer = require(`${NEURANET_CONSTANTS.LIBDIR}/dblayer.js`);
 const brainhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/brainhandler.js`);
+const { _convertToPathFriendlyString } = require(`${NEURANET_CONSTANTS.LIBDIR}/neuranetutils.js`);
 
 const APP_CACHE = {}, FLOWSECTION_CACHE = {}, DEBUG_MODE = NEURANET_CONSTANTS.CONF.debug_mode, TIMED_CACHE = timedcache.newcache(300000);
 const BB_MESSAGE_KEY_PUBLISH = "_org_neuranet_aiapp_op_publish", BB_MESSAGE_KEY_UNPUBLISH = "_org_neuranet_aiapp_op_unpublish";
@@ -406,7 +407,7 @@ exports.getAppFile = (id, org, aiappid) => `${exports.getAppDir(id, org, aiappid
 
 async function _pushAIAppViewForOrg(id, org, aiappid, frontend_relative_webroot) {
     const appFrontendDir = path.resolve(`${CONSTANTS.FRONTENDDIR}/${frontend_relative_webroot}`);
-    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${org}/${aiappid}`;
+    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${_convertToPathFriendlyString(org.toLowerCase())}/${_convertToPathFriendlyString(aiappid.toLowerCase())}`;
     const appFrontEndDir = `${exports.getAppDir(id, org, aiappid)}/frontend`;
     if (!(await serverutils.exists(appFrontEndDir))) return;    // nothing to do
 
@@ -428,7 +429,7 @@ async function _deleteAIAppViewForOrg(id, org, aiappid, frontend_relative_webroo
     if (!(await serverutils.exists(appFrontEndDir))) return;    // nothing to do
 
     const appFrontendDir = path.resolve(`${CONSTANTS.FRONTENDDIR}/${frontend_relative_webroot}`);
-    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${org}/${aiappid}`;
+    const viewDir = `${appFrontendDir}/${CUSTOM_VIEW_PATH}/${_convertToPathFriendlyString(org.toLowerCase())}/${_convertToPathFriendlyString(aiappid.toLowerCase())}`;
     try {serverutils.rmrf(viewDir);} catch (err) {LOG.error(`Error ${err} deleting view from the frontend for for app ID ${aiappid} for org ${org}`)}
 }
 

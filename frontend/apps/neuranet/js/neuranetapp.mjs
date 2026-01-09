@@ -12,7 +12,7 @@ import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
 const MODULE_PATH = util.getModulePathFromURL(import.meta.url), AI_WORKSHOP_VIEW = "aiworkshop", IMAGE_DATA = "data:image",
-    API_GET_AIAPPS = "getorgaiapps", CUSTOM_INTERFACE = "custom";
+    API_GET_AIAPPS = "getorgaiapps", CUSTOM_INTERFACE = "custom", DEFAULT_MAX_PATH_LENGTH = 50;
 
 let loginappMain;
 
@@ -87,8 +87,20 @@ async function openView(appid) {
 function onlogout() {session.remove(APP_CONSTANTS.FORCE_LOAD_VIEW);}
 
 function getViewPath(app, org) {
-    if (app.interface.type == CUSTOM_INTERFACE) return `${APP_CONSTANTS.VIEWS_PATH}/custom/${org}/${app.id}`;
+    if (app.interface.type == CUSTOM_INTERFACE) return `${APP_CONSTANTS.VIEWS_PATH}/custom/${_convertToPathFriendlyString(org)}/${_convertToPathFriendlyString(app.id)}`;
     else return `${APP_CONSTANTS.VIEWS_PATH}/${app.interface.type}`;
+}
+
+function _convertToPathFriendlyString(s, maxPathLength=DEFAULT_MAX_PATH_LENGTH) {
+	let tentativeFilepath = encodeURIComponent(s);
+	if (tentativeFilepath.endsWith(".")) tentativeFilepath = tentativeFilepath.substring(0, tentativeFilepath.length - 1) + "%2E";
+		
+	if (tentativeFilepath.length > maxPathLength) {
+		tentativeFilepath = tentativeFilepath + "." + Date.now();
+		tentativeFilepath = tentativeFilepath.substring(tentativeFilepath.length-maxPathLength);
+	}
+	
+	return tentativeFilepath;
 }
 
 
