@@ -375,5 +375,5 @@ else
   init_python_env
 fi
 
-PYTHON3="$SCRIPT_DIR/neuranetpy/bin/python" # run the version of python inside the virtual environment
+PYTHON3="$SCRIPT_DIR/neuranetpy/bin/python3" # run the version of python inside the virtual environment
 "$PYTHON3" "$@"
