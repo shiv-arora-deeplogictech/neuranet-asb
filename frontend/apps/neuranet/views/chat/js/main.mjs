@@ -10,7 +10,7 @@ import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
-const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts";
+const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts", LLMFLOW_STATUS_WAITING = "waiting", POLL_WAIT = 3000;
 
 let chatsessionID, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
 
@@ -35,12 +35,23 @@ async function initView(data) {
     _setupSSEEvents();
 }
 
-async function getAssistantResult(question, files, message_id, chatbox, aiappid) {
+async function getAssistantResult(question, files, message_id, chatbox, aiappid, poll) {
     const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
-        question, session_id: chatsessionID, aiappid, files, message_id};
+        question, session_id: chatsessionID, aiappid, files, message_id, jobrequest: poll};
     thoughtSubscribers[message_id] = async thoughts =>  // update chat with thoughts of the model while producing the final response
         chatbox.insertAIThoughts(thoughts.join("\n\n"), "text/markdown", message_id);
-    const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", request, true);
+
+    let result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", request, true); delete request.jobrequest;
+    let resultPromise = new Promise(resolve => {
+        if (result?.status == LLMFLOW_STATUS_WAITING) {
+            const waitInterval = setInterval(async _ => {
+                result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", {...request, jobresponse: true}, true);
+                if (result.status != LLMFLOW_STATUS_WAITING) {clearInterval(waitInterval); resolve();}
+            }, POLL_WAIT);
+        } else resolve();
+    });
+    await resultPromise;  // this ensures we have waited for polled responses
+
     if (result.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
 
     // handle all errors here and return early

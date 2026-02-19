@@ -34,22 +34,22 @@ exports.doService = async (jsonReq, _servObject, _headers, _url) => {
 
 	LOG.debug(`Got a chat request from ID ${jsonReq.id}. Incoming request is ${JSON.stringify(jsonReq)}`);
     
-    let polledResponseID; if (jsonReq.jobrequest) {
-        polledResponseID = jsonReq.message_id; TIMED_CACHE.set(polledResponseID, {...CONSTANTS.TRUE_RESULT, status: STATUS_WAITING});
-        _getResult(); return TIMED_CACHE.get(jsonReq.message_id); 
-    }
-    if (jsonReq.jobresponse) {
-        if (TIMED_CACHE.get(jsonReq.message_id)) return TIMED_CACHE.get(jsonReq.message_id); 
-        else return {reason: llmflowrunner.REASONS.NO_JOB, ...CONSTANTS.FALSE_RESULT}; // we do not know of this job
-    }
-
     const _getResult = async _ => { 
         const extraInfo = brainhandler.createExtraInfo(jsonReq.id, jsonReq.org.toLowerCase(), jsonReq.aiappid);
         const aiappid = await aiapp.getAppID(jsonReq.id, jsonReq.org.toLowerCase(), extraInfo);
         const result = await llmflowrunner[aiapp.DEFAULT_ENTRY_FUNCTIONS.llm_flow](
             jsonReq.question, jsonReq.id, jsonReq.org, aiappid, jsonReq, jsonReq.flow||llmflowrunner.DEFAULT_LLM_FLOW);
         
-        if (!polledResponseID) return result; else TIMED_CACHE.set(polledResponseID, result);
+        if (!jsonReq.jobrequest) return result; else TIMED_CACHE.set(polledResponseID, result);
+    }
+
+    const polledResponseID = jsonReq.message_id; if (jsonReq.jobrequest) {
+        TIMED_CACHE.set(polledResponseID, {...CONSTANTS.TRUE_RESULT, status: STATUS_WAITING, message_id: jsonReq.message_id});
+        _getResult(); return TIMED_CACHE.get(polledResponseID); 
+    }
+    if (jsonReq.jobresponse) {
+        if (TIMED_CACHE.get(polledResponseID)) return TIMED_CACHE.get(polledResponseID); 
+        else return {reason: llmflowrunner.REASONS.NO_JOB, ...CONSTANTS.FALSE_RESULT}; // we do not know of this job
     }
 
     return await _getResult();  // coming here means no job control was specified so just run the request and return the results
