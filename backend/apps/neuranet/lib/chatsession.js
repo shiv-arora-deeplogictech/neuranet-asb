@@ -29,6 +29,27 @@ exports.getUsersChatSession = (userid, session_id_in) => {
 	return {chatsession: utils.clone(chatsession)||[], sessionID, sessionKey};
 }
 
+exports.setUsersChatSession = (userid, session_id_in, chatsessionToSet) => {
+	const sessionID = session_id_in,  // not generating any new session ID if not exists, as it's an update call not a get call
+		sessionKey = `${CHAT_SESSION_MEMORY_KEY_PREFIX}_${userid}`; 
+	if (!session_id_in || typeof session_id_in !== "number")  // No need to update & return the empty sessions if not a valid session ID mentioned
+		return {result: true, chatsession: [], sessionID, sessionKey};
+	if (!Array.isArray(chatsessionToSet))  // handling for an invalid chatsessionToSet
+		return {result: false, error: "Invalid chatsession to set: Not an Array", sessionID, sessionKey};
+
+	try{
+		LOG.debug(`Distributed memory key for this session is: ${sessionKey}.`);
+		const idSessions = utils.clone(DISTRIBUTED_MEMORY.get(sessionKey, {}));  // prevent shared mutation
+		idSessions[sessionID] = chatsessionToSet;
+		DISTRIBUTED_MEMORY.set(sessionKey, idSessions);
+		LOG.debug(`Chat session updated. Messages=${chatsessionToSet.length}`);
+		return {result: true, chatsession: utils.clone(chatsessionToSet), sessionID, sessionKey};
+	} catch (error) {
+		LOG.debug(`Failed to update the Chat session for Distributed memory key: ${sessionKey} & incoming sessionID: ${sessionID}.`);
+		return {result: false, error: error.message, sessionID, sessionKey};
+	}
+}
+
 exports.trimSession = async function(max_session_tokens, sessionObjects, aiModelObject, 
 		token_approximation_uplift, tokenizer_name, tokenprocessor) {
 

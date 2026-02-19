@@ -64,7 +64,7 @@ exports.expand = async (params) => {
 
 	const languageDetectedForQuestion =  langdetector.getISOLang(query_in)
 
-	let expandedQuery; if (finalSessionObject.length > 0) {
+	let expandedQuery; if (finalSessionObject.length > 0 || forceExpansion) {  // run expansion if either session is there or force expansion call
         expandedQuery = await simplellm.prompt_answer(
             params[`prompt_${languageDetectedForQuestion}`] || params.prompt, id, org, brainid,
 			{flatsession: flatSession, session: finalSessionObject, question: query_in, ...params}, 

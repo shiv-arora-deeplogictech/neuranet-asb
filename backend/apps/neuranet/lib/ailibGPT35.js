@@ -71,7 +71,10 @@ exports.process = async function(data, promptOrPromptFile, apiKey, model, dontIn
     if (modelObject.read_ai_response_from_samples) LOG.info("*************>> Reading sample response as requested by the model. <<*************");
 
     let response, retries = 0;
-    const _postAIRequest = _ => rest.postHttps(modelObject.driver.host, modelObject.driver.port, 
+    const _postAIRequest = _ => rest[  // https by default if protocol is not mentioned in the driver config
+        modelObject.driver.protocol == "http" ? 
+        "post" : "postHttps" 
+    ](modelObject.driver.host, modelObject.driver.port, 
         modelObject.driver.path, {"Authorization": modelObject.isBasicAuth ? `Basic ${apiKey}` : `Bearer ${apiKey}`, 
             ...(modelObject.x_api_key ? {"x-api-key": modelObject.x_api_key} : {})}, promptObject);
     const _is200ResponseStatus = status => typeof status !== "number" ? false : 
