@@ -1,0 +1,90 @@
+{
+    "classifier": {
+        "threshold": 3.0,
+        "borderline_margin": 0.5,
+
+        "scoring": {
+            "continuation_start":    2.0,
+            "deictic_per_word":      0.9,
+            "deictic_cap":           2.0,
+            "pronoun_per_word":      0.5,
+            "pronoun_cap":           2.0,
+            "repetition_cue":        1.2,
+            "edit_verb_with_object": 1.5,
+            "very_short_question":   1.2,
+            "short_question":        0.6,
+            "long_question":        -0.4,
+            "named_entities":       -0.8,
+            "no_session":           -0.6,
+            "inline_context":       -3.0,
+            "anaphoric_with_session": 1.2
+        },
+
+        "token_thresholds": {
+            "very_short":         6,
+            "short":             10,
+            "long":              24,
+            "min_named_entities": 2
+        },
+
+        "inline_context": {
+            "min_lines":              4,
+            "min_chars_after_colon": 60,
+            "min_chars_in_quotes":   80
+        },
+
+        "common_acronyms": ["I", "OK", "HTTP", "JSON", "YAML", "Node", "JS"],
+
+        "cues": {
+            "strongPrevRef": [
+                "previous", "prior", "earlier", "above", "below",
+                "last message", "last time", "last question", "last answer", "previous message",
+                "as discussed", "as mentioned", "as said", "as we said", "you said", "you mentioned",
+                "from before", "in our chat", "in this chat", "in the conversation", "in this thread",
+                "continue from", "continue where", "pick up where", "resume", "carry on",
+                "same as before", "like before", "the same one", "that one", "the previous one",
+                "upar", "pehle", "pichle", "wahi", "wo wala", "upar wala"
+            ],
+
+            "summarizeRewriteVerifyPrev": [
+                "summarize our chat", "summarize the conversation", "summarize above",
+                "rewrite the above", "rewrite that", "rephrase the above", "improve the above",
+                "verify what you said", "fact check what you said", "check your earlier answer"
+            ],
+
+            "continuationStarters": [
+                "and", "also", "then", "so", "now", "next", "okay", "ok", "cool", "great"
+            ],
+
+            "deictics": [
+                "this", "that", "these", "those",
+                "the above", "the below", "aforementioned", "former", "latter"
+            ],
+
+            "repetitionCues": [
+                "again", "still", "also", "too", "as well", "same", "similar", "another", "one more"
+            ],
+
+            "editVerbs": [
+                "fix", "update", "change", "modify", "edit", "refactor", "optimize", "improve",
+                "rewrite", "shorten", "expand", "summarize", "extend", "add", "remove",
+                "debug", "explain"
+            ],
+
+            "continueVerbs": [
+                "continue", "proceed", "go on", "carry on", "next step"
+            ],
+
+            "objectRefs": [
+                "code", "snippet", "function", "query", "prompt", "message", "answer", "response",
+                "text", "paragraph", "script", "log", "error", "stack trace", "output", "result",
+                "config", "yaml", "json", "screenshot", "image", "pdf", "document", "file"
+            ],
+
+            "pronouns": [
+                "it", "they", "them", "this", "that", "these", "those",
+                "he", "she", "him", "her", "their", "its", "there", "here"
+            ]
+        }
+    }
+}
