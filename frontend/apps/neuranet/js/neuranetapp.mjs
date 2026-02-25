@@ -34,6 +34,7 @@ async function refreshAIApps() {
 }
 
 async function _createdata(data) {   
+    await refreshAIApps();
     let viewPath, aiendpoint, views, activeaiapp; delete data.showhome; delete data.shownotifications;
     const loginresponse = session.get(APP_CONSTANTS.LOGIN_RESPONSE), appsAllowed = [...(loginresponse?.apps||[])],
         isAdmin = session.get(APP_CONSTANTS.CURRENT_USERROLE).toString() == "admin";
