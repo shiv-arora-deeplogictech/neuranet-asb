@@ -146,6 +146,36 @@ span#attachedfiles {
     align-items: flex-end;
     margin-bottom: 0.5em;
 }
+span.userprompt div.user-files {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4em;
+    margin-top: 0.6em;
+}
+span.userprompt div.user-files span.user-file {
+    user-select: none;
+    border: 1px solid rgba(0, 92, 132, 0.25);
+    background-color: rgba(255, 255, 255, 0.55);
+    padding: 0.3em 0.65em;
+    font-size: x-small;
+    box-sizing: border-box;
+    border-radius: 0.6em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    max-width: 10em;
+    color: #005C84;
+    cursor: default;
+    backdrop-filter: blur(2px);
+}
+span.userprompt div.user-files span.user-file img#fileicon {height: 1em; width: 1em; flex-shrink: 0; opacity: 0.75;}
+span.userprompt div.user-files span.user-file span#name {
+    margin-left: 0.4em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 span#messagecontrols span#attachedfiles span.fileicon {
     user-select: none;
     border: 1px solid #87dbff;
@@ -178,7 +208,6 @@ span#messagecontrols span#attachedfiles span.fileicon img#cross {
     left: -0.6em;
     visibility: hidden;
 }
-
 span.usercontentholder {
     display: flex;
     flex-direction: row;
@@ -417,6 +446,14 @@ div.thought {
         onclick="monkshu_env.components['chat-box'].saveAsWord(this.parentNode.parentNode)">
     {{#STT}}<img class="controls" src="{{{COMPONENT_PATH}}}/img/speaker.svg" title="Play Audio" ttsAPI="/apps/{{app}}/tts"
             onclick="monkshu_env.components['chat-box'].playTTS(this)">{{/STT}}
+</span>
+
+<!-- User prompt file icon template -->
+</template>
+<template id="userfile_icon_template">
+<span class="user-file">
+    <img id="fileicon" src="{{{COMPONENT_PATH}}}/img/file.svg">
+    <span id="name"></span>
 </span>
 </template>
 

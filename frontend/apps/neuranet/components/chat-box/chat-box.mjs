@@ -141,8 +141,20 @@ function _detachAllFiles(shadowRoot, clearAttachedFileMemory) {
 function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     const insertionTemplate = shadowRoot.querySelector("template#chatresponse_insertion_template").content.cloneNode(true);   
     const insertion = insertionTemplate.querySelector("div.insertiondiv"); insertion.id = `c${message_id}`; 
-    const elementUserprompt = insertion.querySelector("span.userprompt"); 
-    elementUserprompt.innerHTML = userPrompt;
+    const elementUserprompt = insertion.querySelector("span.userprompt");
+    const memory = chat_box.getMemoryByContainedElement(shadowRoot.querySelector("div#body"));
+    const attachedFiles = memory.FILES_ATTACHED || [];
+    elementUserprompt.textContent = userPrompt;
+    if (attachedFiles.length > 0) {
+        const filesDiv = document.createElement("div"); filesDiv.className = "user-files";
+        const fileIconTemplate = shadowRoot.querySelector("template#userfile_icon_template");
+        for (const file of attachedFiles) {
+            const icon = fileIconTemplate.content.cloneNode(true);
+            icon.querySelector("span#name").textContent = file.filename;
+            filesDiv.appendChild(icon);
+        }
+        elementUserprompt.appendChild(filesDiv);
+    }
     shadowRoot.querySelector("div#chatmainarea").appendChild(insertion);
 
     // scroll to the bottom
