@@ -33,7 +33,7 @@ exports.ingest = async function(fileindexer) {
 
     await fileindexer.start(); 
     let currentStep = 0; for (const pregenStep of pregenSteps) {
-        if (!await _condition_to_run_met(pregenStep)) continue;    // run only if condition is satisfied
+        if (!await _condition_to_run_met(pregenStep, fileindexer)) continue;    // run only if condition is satisfied
         
         const fileAlreadyGenerated = await serverutils.exists(pregenStep.cmspath);   // other cluster members may have already generated the file
         const pregenResult = fileAlreadyGenerated ? {result: true} :   
@@ -80,7 +80,7 @@ exports.uningest = async function(fileindexer) {
     await fileindexer.start();
     const pregenSteps = await _getPregenStepsAIApp(fileindexer); 
     for (const pregenStep of pregenSteps) {
-        if (!await _condition_to_run_met(pregenStep)) continue;    // run only if condition is satisfied
+        if (!await _condition_to_run_met(pregenStep, fileindexer)) continue;    // run only if condition is satisfied
         const delGeneratedFileFromCMSResult = await fileindexer.deleteFileFromCMSRepository(pregenStep.cmspath, true);
         const stepIndexerResult = delGeneratedFileFromCMSResult ? await fileindexer.removeFileFromAI(pregenStep.cmspath) : {result: false};
         if (!stepIndexerResult.result) LOG.error(`Pregen removal failed at step ${pregenStep.label} in removing generated file ${pregenStep.cmspath}.`); 
@@ -106,7 +106,7 @@ exports.rename = async function(fileindexer) {
     await fileindexer.start();
     const pregenSteps = await _getPregenStepsAIApp(fileindexer); 
     for (const pregenStep of pregenSteps) {
-        if (!await _condition_to_run_met(pregenStep)) continue;    // run only if condition is satisfied
+        if (!await _condition_to_run_met(pregenStep, fileindexer)) continue;    // run only if condition is satisfied
         const renameGeneratedFileToCMSResult = await fileindexer.renameFileFromCMSRepository(pregenStep.cmspath,
             pregenStep.cmspathTo, true);
         const stepIndexerResult = renameGeneratedFileToCMSResult ? 
@@ -141,6 +141,7 @@ async function _getPregenStepsAIApp(fileindexer) {
             generate: async fileindexer => (await aiapp.getCommandModule(fileindexer.id, fileindexer.org, 
                 fileindexer.aiappid, command))[command_function||aiapp.DEFAULT_ENTRY_FUNCTIONS.pregen_flow](fileindexer, pregenStepObject.in),
             label: pregenStepObject.in.label,
+            condition_js: pregenStepObject["condition_js"],
             cmspath, comment, cmspathTo, commentTo
         });
     }
@@ -148,15 +149,15 @@ async function _getPregenStepsAIApp(fileindexer) {
     return pregenFunctions;
 }
 
-async function _condition_to_run_met(pregenStep) {
-    const condition_code = pregenStep["condition-js"];
+async function _condition_to_run_met(pregenStep, fileindexer) {
+    const condition_code = pregenStep["condition_js"];
     if (condition_code) return await _runJSCode(condition_code, {NEURANET_CONSTANTS, 
         require: function() {const module = require(...arguments); return module}, fileindexer }); 
     else return true;   // no condition specified
 }
 
 async function _runJSCode(code, context) {
-    try {return await (utils.createAsyncFunction(code)(context))} catch (err) {
+    try {return await (serverutils.createAsyncFunction(code)(context))} catch (err) {
         LOG.error(`Error running custom JS code error is: ${err}`); return false;
     }
 }
