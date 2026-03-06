@@ -131,7 +131,7 @@ span#messagecontrols {
     font-size: smaller;
     color: #007BB0;
 }
-span#messagecontrols img {height: 1.5em; width: 1.5em;}
+span#messagecontrols img {height: 1.5em; width: 1.5em; cursor: pointer;}
 span#messagecontrols span#attachedfiles {
     flex-grow: 1; 
     margin-left: 0.2em;
@@ -139,37 +139,41 @@ span#messagecontrols span#attachedfiles {
 span#attachedfiles {
     display: flex;
     flex-direction: row;
-    overflow: hidden;
     overflow-x: auto;
+    overflow-y: visible;
     grid-gap: 0.8em;
-    height: 2.5em;
+    height: 2.8em;
     align-items: flex-end;
-    margin-bottom: 0.5em;
+    margin-bottom: 1.0em;
+    padding-top: 0.5em;
 }
+span#attachedfiles::-webkit-scrollbar {display: none;}
 span.userprompt div.user-files {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.4em;
     margin-top: 0.6em;
+    max-height: 6.4em;
+    overflow-y: auto;
 }
 span.userprompt div.user-files span.user-file {
     user-select: none;
     border: 1px solid rgba(0, 92, 132, 0.25);
     background-color: rgba(255, 255, 255, 0.55);
-    padding: 0.3em 0.65em;
+    padding: 0.5em;
     font-size: x-small;
     box-sizing: border-box;
-    border-radius: 0.6em;
+    border-radius: 0.5em;
     display: flex;
     flex-direction: row;
     align-items: center;
     max-width: 10em;
+    height: 2.8em;
     color: #005C84;
-    cursor: default;
+    cursor: pointer;
     backdrop-filter: blur(2px);
 }
-span.userprompt div.user-files span.user-file img#fileicon {height: 1em; width: 1em; flex-shrink: 0; opacity: 0.75;}
 span.userprompt div.user-files span.user-file span#name {
     margin-left: 0.4em;
     overflow: hidden;
@@ -186,27 +190,33 @@ span#messagecontrols span#attachedfiles span.fileicon {
     align-items: center;
     display: flex;
     flex-direction: row;
-    width: 8em;
+    max-width: 10em;
     color: #00a1e6;
-    height: 2.5em;
+    height: 2.8em;
+    margin-bottom: 0.5em;
+    cursor: pointer;
+    position: relative;
 }
-span#messagecontrols span#attachedfiles span.fileicon img#fileicon {height: 1em; width: 1em;}
+
 span#messagecontrols span#attachedfiles span.fileicon span#name {
-    max-width: 6em;
+    margin-left: 0.5em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 6em;
-    margin-left: 0.5em;
-    min-width: 6em;
 }
+svg.fileicon {width: 2.0em; height: 2.2em; flex-shrink: 0; overflow: hidden;}
+svg.fileicon text.fileext-label {text-anchor: middle; font-size: 4.5px; font-weight: bold; fill: #005C84;}
 span#messagecontrols span#attachedfiles span.fileicon img#cross {
-    height: 1.5em;
-    width: 1.5em;
-    position: relative;
-    top: -1em;
-    left: -0.6em;
+    height: 1.2em;
+    width: 1.2em;
+    position: absolute;
+    top: -0.4em;
+    right: -0.4em;
     visibility: hidden;
+    cursor: pointer;
+}
+span#messagecontrols span#attachedfiles span.fileicon:hover img#cross {
+    visibility: visible;
 }
 span.usercontentholder {
     display: flex;
@@ -239,7 +249,7 @@ img.waitspin {
     width: auto !important;
 }
 span.userprompt, span.airesponse {
-    min-height: 3.5em;
+    min-height: 2.8em;
     color: #005C84;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -448,27 +458,34 @@ div.thought {
             onclick="monkshu_env.components['chat-box'].playTTS(this)">{{/STT}}
 </span>
 
-<!-- User prompt file icon template -->
 </template>
+<!-- File icon SVG template -->
+<template id="fileicon_svg_template">
+<svg class="fileicon" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1.72003 0.359985C0.924669 0.359985 0.280029 1.00463 0.280029 1.79999V16.2C0.280029 16.9953 0.924669 17.64 1.72003 17.64H12.28C13.0754 17.64 13.72 16.9953 13.72 16.2V7.61811C13.72 7.36371 13.6188 7.11936 13.4388 6.93936L7.14065 0.641235C6.96065 0.461235 6.7163 0.359985 6.4619 0.359985H1.72003ZM1.72003 0.839985H6.52003V6.11999C6.52003 6.91535 7.16467 7.55999 7.96003 7.55999H13.24V16.2C13.24 16.7304 12.8104 17.16 12.28 17.16H1.72003C1.18963 17.16 0.760029 16.7304 0.760029 16.2V1.79999C0.760029 1.26959 1.18963 0.839985 1.72003 0.839985ZM7.00003 1.17936L12.9007 7.07999H7.96003C7.42963 7.07999 7.00003 6.65039 7.00003 6.11999V1.17936Z" fill="#007BB0"/>
+    <text class="fileext-label" x="7" y="14">&#123;&#123;FILE_EXT&#125;&#125;</text>
+</svg>
+</template>
+
+<!-- User prompt file icon box template -->
 <template id="userfile_icon_template">
-<span class="user-file">
-    <img id="fileicon" src="{{{COMPONENT_PATH}}}/img/file.svg">
-    <span id="name"></span>
-</span>
-</template>
-
-<!-- File attachment template -->
-<template id="fileattachment_insertion_template">
-<span class="fileicon" id="&#123;&#123;&#123;fileid&#125;&#125;&#125;" 
-        onmouseover="this.querySelector('img#cross').style.visibility='visible'"
-        onmouseleave="this.querySelector('img#cross').style.visibility='hidden'">
-    <img id="fileicon" src="{{{COMPONENT_PATH}}}/img/file.svg">
+<span class="user-file" id="&#123;&#123;&#123;fileid&#125;&#125;&#125;"
+    onclick="monkshu_env.components['chat-box'].downloadAttachedFile(this)">
+    <span id="fileiconplaceholder"></span>
     <span id="name">&#123;&#123;filename&#125;&#125;</span>
-    <img id="cross" src="{{{COMPONENT_PATH}}}/img/cross.svg" 
-        onclick="monkshu_env.components['chat-box'].detach(this, '&#123;&#123;&#123;fileid&#125;&#125;&#125;')">
 </span>
 </template>
 
+<!-- File attachment box template -->
+<template id="fileattachment_insertion_template">
+<span class="fileicon" id="&#123;&#123;&#123;fileid&#125;&#125;&#125;"
+        onclick="monkshu_env.components['chat-box'].downloadAttachedFile(this)">
+    <span id="fileiconplaceholder"></span>
+    <span id="name">&#123;&#123;filename&#125;&#125;</span>
+    <img id="cross" src="{{{COMPONENT_PATH}}}/img/cross.svg"
+        onclick="event.stopPropagation(); monkshu_env.components['chat-box'].detach(this, '&#123;&#123;&#123;fileid&#125;&#125;&#125;')">
+</span>
+</template>
 
 <!-- Collapsible content section template -->
 <template id="collapsible_content_template"> <!-- Marked will break parsing if it detects 4 spaces, so the template below is very particular -->

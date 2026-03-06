@@ -15,8 +15,10 @@ import {marked} from "./3p/marked.esm.min.js";
 import {router} from "/framework/js/router.mjs";
 import {monkshu_component} from "/framework/js/monkshu_component.mjs";
 
-const COMPONENT_PATH = util.getModulePathFromURL(import.meta.url), DEFAULT_MAX_ATTACH_SIZE = 4194304, 
-    DEFAULT_MAX_ATTACH_SIZE_ERROR = "File size is larger than allowed size";
+const COMPONENT_PATH = util.getModulePathFromURL(import.meta.url), DEFAULT_MAX_ATTACH_SIZE = 4194304,
+    DEFAULT_MAX_ATTACH_SIZE_ERROR = "File size is larger than allowed size",
+    DEFAULT_MAX_ATTACHMENTS_ERROR = "Maximum attachments limit reached",
+    DOWNLOAD_MSG_ON_HOVERING = "Download";
 
 let MUSTACHE, last_message_id;
 
@@ -44,10 +46,12 @@ async function send(containedElement) {
     if (userPrompt == "") return;    // empty prompt, ignore
 
     // disable send box and controls
-    const divMessage = shadowRoot.querySelector("div#message"), 
-        buttonSendImg = shadowRoot.querySelector("img#send"), 
+    const divMessage = shadowRoot.querySelector("div#message"),
+        buttonSendImg = shadowRoot.querySelector("img#send"),
+        attachImg = shadowRoot.querySelector("img#attach"),
         checkBox = shadowRoot.querySelector("input#multiline");
-    divMessage.classList.add("disabled"), checkBox.setAttribute("disabled", true); 
+    divMessage.classList.add("disabled"), checkBox.setAttribute("disabled", true);
+    if (attachImg) attachImg.style.pointerEvents = "none";
     buttonSendImg.src = `${COMPONENT_PATH}/img/spinner.svg`; userMessageArea.readOnly = true;
 
     // insert the user's message
@@ -64,6 +68,7 @@ async function send(containedElement) {
             } else { // enable sending more messages
                 buttonSendImg.src = `${COMPONENT_PATH}/img/send.svg`;
                 divMessage.classList.remove("disabled"), checkBox.removeAttribute("disabled");
+                if (attachImg) attachImg.style.pointerEvents = "";
                 userMessageArea.readOnly = false;
             }   
         },
@@ -83,10 +88,11 @@ async function attach(containedElement) {
         return;
     }
 
-    const {name, data} = await util.uploadAFile(accepts, "binary", 
+    const {name, type, data} = await util.uploadAFile(accepts, "binary",
         host.getAttribute("maxattachsize")||DEFAULT_MAX_ATTACH_SIZE, host.getAttribute("maxattachsizeerror")||DEFAULT_MAX_ATTACH_SIZE_ERROR);
-    const bytes64 = await util.bufferToBase64(data), fileid = name.replaceAll(/[.\s]/g,"_")+"_"+Date.now();;
-    const fileObject = {filename: name, bytes64, fileid}; 
+    const bytes64 = await util.bufferToBase64(data), fileid = name.replaceAll(/[.\s]/g,"_")+"_"+Date.now();
+    const FILE_EXT = name.split(".").pop().toLowerCase();
+    const fileObject = {filename: name, type, bytes64, fileid, FILE_EXT};
     memory.FILES_ATTACHED.push(fileObject);
 
     const shadowRoot = chat_box.getShadowRootByContainedElement(containedElement);
@@ -94,6 +100,11 @@ async function attach(containedElement) {
     const renderedHTML = MUSTACHE.render(insertionHTML, fileObject);
     const tempNode = document.createElement("template"); tempNode.innerHTML = renderedHTML;
     const newNode = tempNode.content.cloneNode(true);
+    newNode.querySelector("span.fileicon").title = `${DOWNLOAD_MSG_ON_HOVERING} ${name}`;
+
+    // replaces placeholder with svg template
+    _renderFileIcon(newNode.querySelector("span#fileiconplaceholder"), shadowRoot, FILE_EXT);
+
     const insertionNode = shadowRoot.querySelector("span#attachedfiles");
     insertionNode.appendChild(newNode);
 }
@@ -147,10 +158,18 @@ function _insertAIRequest(shadowRoot, userMessageArea, userPrompt, message_id) {
     elementUserprompt.textContent = userPrompt;
     if (attachedFiles.length > 0) {
         const filesDiv = document.createElement("div"); filesDiv.className = "user-files";
-        const fileIconTemplate = shadowRoot.querySelector("template#userfile_icon_template");
+        const fileIconTemplateHTML = shadowRoot.querySelector("template#userfile_icon_template").innerHTML.trim();
         for (const file of attachedFiles) {
-            const icon = fileIconTemplate.content.cloneNode(true);
-            icon.querySelector("span#name").textContent = file.filename;
+            const fileIconrenderedHTML = MUSTACHE.render(fileIconTemplateHTML, file);
+            const tempNode = document.createElement("template"); tempNode.innerHTML = fileIconrenderedHTML;
+            const icon = tempNode.content.cloneNode(true);
+            const userFileSpan = icon.querySelector("span.user-file");
+            userFileSpan.title = `${DOWNLOAD_MSG_ON_HOVERING} ${file.filename}`;
+            userFileSpan._fileObject = file;
+
+            // replaces placeholder with svg template
+            _renderFileIcon(icon.querySelector("span#fileiconplaceholder"), shadowRoot, file.FILE_EXT);
+
             filesDiv.appendChild(icon);
         }
         elementUserprompt.appendChild(filesDiv);
@@ -269,8 +288,25 @@ async function _typewriterWriteText(element, html, scroller, delay=10) {  // AI 
     element.innerHTML = ""; for (const child of dummyTemplate.content.childNodes) await _revealNode(child, element);
 }
 
+// This function takes the svg template from html and renders the text inside and replaces the placeholder with the rendered svg
+function _renderFileIcon(placeholder, shadowRoot, FILE_EXT) {
+    const svgHTML = MUSTACHE.render(shadowRoot.querySelector("template#fileicon_svg_template").innerHTML, {FILE_EXT});
+    const t = document.createElement("template"); t.innerHTML = svgHTML;
+    placeholder.replaceWith(t.content.cloneNode(true));
+}
+
 const _getMemory = containedElement => chat_box.getMemoryByContainedElement(containedElement);
 
-export const chat_box = {trueWebComponentMode: true, elementConnected, elementRendered, send, attach, 
-    detach, saveAsWord, startVoiceInput:(()=>{})(), playTTS: (()=>{})()}
+async function downloadAttachedFile(element) {
+    const target = element.closest(".fileicon[id]") || element.closest(".user-file[id]") || element;
+    const memory = chat_box.getMemoryByContainedElement(element);
+    const fileObject = memory.FILES_ATTACHED.find(f => f.fileid === target.id) || target._fileObject;
+    if (!fileObject) return;
+    const {bytes64, type, filename} = fileObject;
+    const binary = Uint8Array.from(atob(bytes64), c => c.charCodeAt(0));
+    util.downloadFile(binary, type, filename);
+}
+
+export const chat_box = {trueWebComponentMode: true, elementConnected, elementRendered, send, attach,
+    detach, downloadAttachedFile, saveAsWord, startVoiceInput:(()=>{})(), playTTS: (()=>{})()}
 monkshu_component.register("chat-box", `${COMPONENT_PATH}/chat-box.html`, chat_box);
