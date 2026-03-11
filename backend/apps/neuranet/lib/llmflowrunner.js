@@ -50,7 +50,6 @@ exports.answer = async function(query, id, org, aiappid, request, flow_section=e
 
         const [command, command_function] = llmflowCommandDefinition.command.split(".");
         if (command != 'asbagent') __notASBNodeCount++;
-        const llmflowModule = await aiapp.getCommandModule(id, org, aiappid, command);
         const callParams = {id, org, query, aiappid, request, 
             return_error: function(){working_memory.return_error(...arguments, working_memory)},
             has_error: function(){return working_memory.__error}}; 
@@ -58,6 +57,7 @@ exports.answer = async function(query, id, org, aiappid, request, flow_section=e
             callParams[exports.extractRawKeyName(key)] = await _expandLLMFlowParam(key, value, working_memory);
 
         try {
+            const llmflowModule = await aiapp.getCommandModule(id, org, aiappid, command);
             const flow_response = await llmflowModule[command_function||aiapp.DEFAULT_ENTRY_FUNCTIONS.llm_flow](
                 callParams, llmflowCommandDefinition);
             if (working_memory.__error) break;
