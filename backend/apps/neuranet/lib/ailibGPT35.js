@@ -37,8 +37,9 @@ const PROMPT_VAR = "${__ORG_NEURANET_PROMPT__}", SAMPLE_MODULE_PREFIX = "module(
  */
 exports.process = async function(data, promptOrPromptFile, apiKey, model, dontInflatePrompt, forceNonVerboseLog=false) {
     const modelObject = typeof model === "object" ? model : await aiutils.getAIModel(model); 
-    const safeData = jsonEscapeStrings(data), rawPrompt = await aiutils.getPrompt(promptOrPromptFile);
-    const prompt = dontInflatePrompt ? rawPrompt : mustache.render(rawPrompt, safeData).replace(/\r\n/gm,"\n");
+    const safeData = jsonEscapeStrings(data);
+    const prompt = dontInflatePrompt ? promptOrPromptFile : 
+mustache.render(await aiutils.getPrompt(promptOrPromptFile), safeData).replace(/\r\n/gm,"\n");   // create the prompt
     if (!modelObject) { LOG.error(`Bad model object - ${modelObject}.`); return null; }
     const verboseLogging = (!forceNonVerboseLog) && NEURANET_CONSTANTS.CONF.verbose_log;
 
