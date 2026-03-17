@@ -12,9 +12,9 @@ import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
-const API_SSE_EVENTS = "sseevents", NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts";
+const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts";
 
-let chatsessionID, notification_events, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
+let chatsessionID, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
 
 async function initView(data) {
     mustache = await router.getMustache();
@@ -23,7 +23,6 @@ async function initView(data) {
     data.VIEW_PATH = data.viewpath;
     VIEW_PATH = data.viewpath;
     AI_ENDPOINT = data.aiendpoint;
-    data.shownotifications = {action: "monkshu_env.apps[APP_CONSTANTS.APP_NAME].enterprise_assist_main.getNotifications()"};
     i18n.addPath(`${VIEW_PATH}`);
     
     const starterPrompts = (await i18n.get("CustomEnterpriseAssist_StarterPrompts")).split("|").map(value=>value.trim());
@@ -31,22 +30,9 @@ async function initView(data) {
     const userfname = session.get(APP_CONSTANTS.USERNAME).toString().split(" ")[0];
     data.greeting = mustache.render(randomPrompt, {name: userfname});  // random greeting
     
-    setupSSEEvents();
+    _setupSSEEvents();
 }
 
-async function getNotifications() {
-    if (!notification_events) LOG.debug(`No notification events.`); 
-
-    const eventsArray = []; if (notification_events) for (const event of Object.values(notification_events.events)) 
-        eventsArray.push({...event, success: event.result == true ? true : undefined, 
-            error: event.result == true ? undefined : true, VIEW_PATH});
-    
-    const eventsTemplate = document.querySelector("#notificationstemplate"), eventsHTML = eventsTemplate.innerHTML,
-        matches = /<!--([\s\S]+)-->/g.exec(eventsHTML), template = matches[1]; 
-    const renderedEvents = mustache.render(template, await router.getPageData(undefined, 
-        {events:eventsArray.length?eventsArray:undefined})); 
-    return renderedEvents;
-}
 
 async function getAssistantResult(question, files, message_id, chatbox, aiappid) {
     const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
@@ -93,13 +79,10 @@ async function parseAIResponse(ai_result, chatbox) {
     return rendered;
 }
 
-function setupSSEEvents() {
+function _setupSSEEvents() {
     const id = session.get(APP_CONSTANTS.USERID).toString(), org = session.get(APP_CONSTANTS.USERORG).toString();
     const sseURL = `${APP_CONSTANTS.API_PATH}/${API_SSE_EVENTS}`;
     const sse = apiman.subscribeSSEEvents(sseURL, {id, org}, true);
-    sse.addEventListener(NN_FILEUPDATE_EVENT_NAME, event => {
-        try {notification_events = JSON.parse(event.data)} catch (err) {LOG.error(`Error parsing file events`);}
-    });
     sse.addEventListener(NN_THOUGHTS_EVENT_NAME, event => {
         try {
             const thought_events = JSON.parse(event.data).events;
@@ -117,4 +100,4 @@ function _newThoughtsDetected(oldThoughts, newThoughts) {
             if (thoughtSubscribers[message_id]) thoughtSubscribers[message_id](thoughts);
 }
 
-export const main = {initView, getNotifications, getAssistantResult};
+export const main = {initView, getAssistantResult};
