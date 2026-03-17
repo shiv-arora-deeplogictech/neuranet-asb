@@ -2,8 +2,8 @@
  * (C) 2015 TekMonks. All rights reserved.
  * License: MIT - see enclosed license.txt file.
  */
-const FRONTEND = "https://{{{hostname}}}";
-const BACKEND = "https://{{{hostname}}}:9090";
+const FRONTEND = new URL(window.location.href).protocol + "//" + new URL(window.location.href).host;
+const BACKEND = new URL(window.location.href).protocol + "//" + new URL(window.location.href).hostname + ":9090";
 const APP_NAME = "neuranet";
 const APP_PATH = `${FRONTEND}/apps/${APP_NAME}`;
 const LIB_PATH = `${APP_PATH}/js`;
