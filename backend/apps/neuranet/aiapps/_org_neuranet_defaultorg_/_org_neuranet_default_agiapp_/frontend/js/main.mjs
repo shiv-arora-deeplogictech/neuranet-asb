@@ -47,11 +47,11 @@ async function getAssistantResult(question, files, message_id, chatbox, aiappid)
     if (!result) {doErrorResult(); return} // error, return
     if ((!result.result) && (result.reason == "limit")) {doErrorResult(await i18n.get("ErrorConvertingAIQuotaLimit")); return}
     // in case of no knowledge, allow the assistant to continue still, with the message that we have no knowledge to answer this particular prompt
-    if ((!result.result) && (result.reason == "noknowledge")) {doErrorResult(await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge")); return} 
+    if ((!result.result) && (result.reason == "noknowledge")) {chatbox.insertAIResponse({ok: true, response: await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge"), mime: "text/markdown"}, message_id); return}
     // bad result means chat failed
     if (!result.result) {doErrorResult(await i18n.get("ChatAIError")); return} 
     // result ok but no metadata means response is not from our data, reject it as well with no knowledge
-    if (!result.metadatas) {doErrorResult(await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge")); return} 
+    if (!result.metadatas) {chatbox.insertAIResponse({ok: true, response: await i18n.get("CustomEnterpriseAssist_ErrorNoKnowledge"), mime: "text/markdown"}, message_id); return}
 
     // coming here means we have a good response with no errors
     const resultRendered = await parseAIResponse(result, chatbox);
