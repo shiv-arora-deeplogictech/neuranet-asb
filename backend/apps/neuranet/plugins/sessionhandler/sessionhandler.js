@@ -66,7 +66,8 @@ exports.classifierTrimIfNeeded = async (params) => {
 	const sessionString = chatsession.map(entry => `${entry.role}: ${entry.content}`).join("\n");
 
 
-	const shouldTrim = _shouldTrimByClassifier(query_in, sessionString);
+	const languageDetectedForQuestion = langdetector.getISOLang(query_in);
+	const shouldTrim = _shouldTrimByClassifier(query_in, sessionString, languageDetectedForQuestion);
 	if (!shouldTrim) {
 		LOG.info(`Auto session trimming skipped (classifier: follow-up) for '${query_in}' from ID ${id} of org ${org}.`);
 		return false;
@@ -97,8 +98,6 @@ exports.classifierTrimIfNeeded = async (params) => {
 		chatsessionModule.jsonifyContentsInThisSession(chatsession), aiModelObjectForChat,
 		aiModelObjectForChat.token_approximation_uplift, aiModelObjectForChat.tokenizer, aiLibrary) : [];
 	if (finalSessionObject.length) finalSessionObject[finalSessionObject.length - 1].last = true;
-
-	const languageDetectedForQuestion = langdetector.getISOLang(query_in);
 	const inputTemperature = params.model?.model_overrides?.temperature;
 	if (inputTemperature != undefined) aiModelObjectForChat.request.temperature = inputTemperature;
 
