@@ -24,7 +24,7 @@ exports.doService = async jsonReq => {
 
 exports.isValidLogin = headers => APIREGISTRY.getExtension("JWTTokenManager").checkToken(exports.getToken(headers));
 exports.getID = headers => APIREGISTRY.getExtension("JWTTokenManager").getClaims(headers).id;
-exports.getRole = headers => APIREGISTRY.getExtension("JWTTokenManager").getClaims(headers).role;
+exports.getRole = headers => APIREGISTRY.getExtension("JWTTokenManager").getClaims(headers).sub;
 exports.getOrg = headers => APIREGISTRY.getExtension("JWTTokenManager").getClaims(headers).org;
 exports.getJWT = headers => APIREGISTRY.getExtension("JWTTokenManager").getToken(headers);
 exports.getToken = headers => exports.getJWT(headers);
@@ -59,6 +59,7 @@ exports.isAdmin = headers => (exports.getRole(headers))?.toLowerCase() == NEURAN
 function _getOTK(_jsonReq) {
     return {...CONSTANTS.TRUE_RESULT, otk: serverutils.generateUUID(false)};
 }
+
 
 async function _verifyJWT(jsonReq) {
     let tokenValidationResult; try {
