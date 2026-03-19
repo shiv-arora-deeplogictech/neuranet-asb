@@ -22,34 +22,28 @@
  */
 
 const aiapp = require(`${NEURANET_CONSTANTS.LIBDIR}/aiapp.js`);
-const timedcache = require(`${CONSTANTS.LIBDIR}/timedcache.js`);
 const brainhandler = require(`${NEURANET_CONSTANTS.LIBDIR}/brainhandler.js`);
 const llmflowrunner = require(`${NEURANET_CONSTANTS.LIBDIR}/llmflowrunner.js`);
-
-const TIMED_CACHE = timedcache.newcache(NEURANET_CONSTANTS.CONF.apicache_expiry), STATUS_WAITING = "waiting";
+const sseevents = require(`${NEURANET_CONSTANTS.APIDIR}/sseevents.js`);
 
 exports.doService = async (jsonReq, _servObject, _headers, _url) => {
 	if (!validateRequest(jsonReq)) {
         LOG.error("Validation failure."); return {reason: llmflowrunner.REASONS.VALIDATION, ...CONSTANTS.FALSE_RESULT};}
 
 	LOG.debug(`Got a chat request from ID ${jsonReq.id}. Incoming request is ${JSON.stringify(jsonReq)}`);
-    
+
     const _getResult = async _ => { 
         const extraInfo = brainhandler.createExtraInfo(jsonReq.id, jsonReq.org.toLowerCase(), jsonReq.aiappid);
         const aiappid = await aiapp.getAppID(jsonReq.id, jsonReq.org.toLowerCase(), extraInfo);
         const result = await llmflowrunner[aiapp.DEFAULT_ENTRY_FUNCTIONS.llm_flow](
             jsonReq.question, jsonReq.id, jsonReq.org, aiappid, jsonReq, jsonReq.flow||llmflowrunner.DEFAULT_LLM_FLOW);
         
-        if (!jsonReq.jobrequest) return result; else TIMED_CACHE.set(polledResponseID, result);
+        if (!jsonReq.jobrequest) return result; else sseevents.emitLLMResult(jsonReq.id, jsonReq.org, jsonReq.message_id, result);
     }
 
-    const polledResponseID = jsonReq.message_id; if (jsonReq.jobrequest) {
-        TIMED_CACHE.set(polledResponseID, {...CONSTANTS.TRUE_RESULT, status: STATUS_WAITING, message_id: jsonReq.message_id});
-        _getResult(); return TIMED_CACHE.get(polledResponseID); 
-    }
-    if (jsonReq.jobresponse) {
-        if (TIMED_CACHE.get(polledResponseID)) return TIMED_CACHE.get(polledResponseID); 
-        else return {reason: llmflowrunner.REASONS.NO_JOB, ...CONSTANTS.FALSE_RESULT}; // we do not know of this job
+    if (jsonReq.jobrequest) {
+        _getResult();
+        return {...CONSTANTS.TRUE_RESULT, message_id: jsonReq.message_id, requestid: jsonReq.message_id};
     }
 
     return await _getResult();  // coming here means no job control was specified so just run the request and return the results

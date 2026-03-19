@@ -10,7 +10,7 @@ import {router} from "/framework/js/router.mjs";
 import {session} from "/framework/js/session.mjs";
 import {apimanager as apiman} from "/framework/js/apimanager.mjs";
 
-const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts", LLMFLOW_STATUS_WAITING = "waiting", POLL_WAIT = 3000;
+const API_SSE_EVENTS = "sseevents", NN_THOUGHTS_EVENT_NAME = "thoughts";
 
 let chatsessionID, old_thoughts={}, thoughtSubscribers=[], VIEW_PATH, AI_ENDPOINT, mustache;
 
@@ -35,24 +35,18 @@ async function initView(data) {
     _setupSSEEvents();
 }
 
-async function getAssistantResult(question, files, message_id, chatbox, aiappid, poll) {
+async function getAssistantResult(question, files, message_id, chatbox, aiappid, useSSE) {
     const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
-        question, session_id: chatsessionID, aiappid, files, message_id, jobrequest: poll};
+        question, session_id: chatsessionID, aiappid, files, message_id, jobrequest: useSSE};
     thoughtSubscribers[message_id] = async thoughts =>  // update chat with thoughts of the model while producing the final response
         chatbox.insertAIThoughts(thoughts.join("\n\n"), "text/markdown", message_id);
 
-    let result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", request, true); delete request.jobrequest;
-    let resultPromise = new Promise(resolve => {
-        if (result?.status == LLMFLOW_STATUS_WAITING) {
-            const waitInterval = setInterval(async _ => {
-                result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", {...request, jobresponse: true}, true);
-                if (result.status != LLMFLOW_STATUS_WAITING) {clearInterval(waitInterval); resolve();}
-            }, POLL_WAIT);
-        } else resolve();
-    });
-    await resultPromise;  // this ensures we have waited for polled responses
+    // useSSE=true: apiman.rest fires the POST, gets {message_id, requestid}, then awaits result via SSE (timeout + cleanup handled by apimanager)
+    // useSSE=false: apiman.rest fires the POST and returns the result directly
+    const result = await apiman.rest({url: `${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, type: "POST",
+        req: request, sendToken: true, sseURL: useSSE ? `${APP_CONSTANTS.API_PATH}/${API_SSE_EVENTS}` : false});
 
-    if (result.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
+    if (result?.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
 
     // handle all errors here and return early
     const doErrorResult = async err => chatbox.insertAIResponse({error: err||(await i18n.get("ChatAIError")), ok: false, mime: "text/markdown"});

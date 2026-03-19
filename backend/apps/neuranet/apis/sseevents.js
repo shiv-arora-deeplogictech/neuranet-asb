@@ -7,8 +7,9 @@
 
 const blackboard = require(`${CONSTANTS.LIBDIR}/blackboard.js`);
 
-const EVENTS_KEY = "__org_monkshu_neuranet_events_key", MEM_TO_USE = CLUSTER_MEMORY, 
-    NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts";
+const EVENTS_KEY = "__org_monkshu_neuranet_events_key", MEM_TO_USE = CLUSTER_MEMORY,
+    NN_FILEUPDATE_EVENT_NAME = "nnfileupdate", NN_THOUGHTS_EVENT_NAME = "thoughts",
+    NN_LLM_RESULT_EVENT_NAME = "_org_monkshu_api_sse_event_";  // must match SERVER_SSE_EVENTS_NAME in apimanager.mjs
 
 exports.initSync = _ => blackboard.subscribe(NEURANET_CONSTANTS.NEURANETEVENT, message => {
     if ((message.type != NEURANET_CONSTANTS.EVENTS.AIDB_FILE_PROCESSING && 
@@ -31,7 +32,20 @@ exports.doSSE = async (jsonReq, sseEventSender) => {
     if (usermemory) {
         sseEventSender({event: NN_FILEUPDATE_EVENT_NAME, id: Date.now(), data:{events: (usermemory.fileevents||{})}});
         sseEventSender({event: NN_THOUGHTS_EVENT_NAME, id: Date.now(), data:{events: (usermemory.thoughts||{})}});
+        if (usermemory.llmresults && Object.keys(usermemory.llmresults).length) {
+            for (const [requestid, response] of Object.entries(usermemory.llmresults))
+                sseEventSender({event: NN_LLM_RESULT_EVENT_NAME, id: Date.now(), data:{requestid, response}});
+            usermemory.llmresults = {};   // one-shot: clear after delivery
+            _setUserMemory(jsonReq.id, jsonReq.org, usermemory);
+        }
     }
+}
+
+exports.emitLLMResult = (id, org, messageID, result) => {
+    const usermemory = _getUserMemory(id, org);
+    if (!usermemory.llmresults) usermemory.llmresults = {};
+    usermemory.llmresults[messageID] = result;  // stored as {requestid: messageID, response: result} shape when emitted in doSSE
+    _setUserMemory(id, org, usermemory);
 }
 
 exports.emitThought = (id, org, messageID, thought) => {

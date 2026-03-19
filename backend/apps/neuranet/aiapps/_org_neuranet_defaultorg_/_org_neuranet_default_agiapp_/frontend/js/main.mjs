@@ -34,13 +34,14 @@ async function initView(data) {
 }
 
 
-async function getAssistantResult(question, files, message_id, chatbox, aiappid) {
-    const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(), 
-        question, session_id: chatsessionID, aiappid, files, message_id};
+async function getAssistantResult(question, files, message_id, chatbox, aiappid, useSSE) {
+    const request = {id: session.get(APP_CONSTANTS.USERID).toString(), org: session.get(APP_CONSTANTS.USERORG).toString(),
+        question, session_id: chatsessionID, aiappid, files, message_id, jobrequest: useSSE};
     thoughtSubscribers[message_id] = async thoughts =>  // update chat with thoughts of the model while producing the final response
         chatbox.insertAIThoughts(thoughts.join("\n\n"), "text/markdown", message_id);
-    const result = await apiman.rest(`${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, "POST", request, true);
-    if (result.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
+    const result = await apiman.rest({url: `${APP_CONSTANTS.API_PATH}/${AI_ENDPOINT}`, type: "POST",
+        req: request, sendToken: true, sseURL: useSSE ? `${APP_CONSTANTS.API_PATH}/${API_SSE_EVENTS}` : false});
+    if (result?.session_id) chatsessionID = result.session_id;  // save session ID so that backend can maintain session
 
     // handle all errors here and return early
     const doErrorResult = async err => chatbox.insertAIResponse({error: err||(await i18n.get("CustomEnterpriseAssist_AIError")), ok: false, mime: "text/markdown"});
