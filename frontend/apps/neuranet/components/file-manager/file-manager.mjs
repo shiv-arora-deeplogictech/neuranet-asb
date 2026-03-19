@@ -411,7 +411,7 @@ async function editFile(element) {
 
    if (selectedElement.id == "paste") {paste(selectedElement); return;}
 
-   if (!selectedElement.dataset.stats) _showErrordialog();  // not a file, not sure 
+   if (!selectedElement.dataset.stats) _showErrorDialog();  // not a file, not sure 
    else if (JSON.parse(selectedElement.dataset.stats).size < MAX_EDIT_SIZE) editFileLoadData(element);  // now it can only be a file 
    else _showErrorDialog(null, await i18n.get("FileTooBigToEdit"));  // too big to edit inline - download and edit
 }
@@ -425,8 +425,8 @@ async function editFileLoadData(element) {
       dialog(element).hideDialog(FMDIALOG_ID); screenFocusUnfocus(file_manager.getHostElement(element, true));
       const resp = await apiman.rest(API_OPERATEFILE, "POST", _addExtraInfo({path: selectedPath, op: "write", 
          data: result.filecontents}, element), true);
-      if (!resp.result) _showErrordialog();
-   }); else _showErrordialog();
+      if (!resp.result) _showErrorDialog();
+   }); else _showErrorDialog();
 }
 
 function editFileVisible() {
@@ -446,7 +446,7 @@ async function downloadFile(element) {
    const extraInfo = _addExtraInfo({path: selectedPath, reqid}, element);
    const link = document.createElement("a"), securid = await apiman.rest(API_DOWNLOADFILE_GETSECURID, "GET", 
       extraInfo, true, false);
-   if (!securid.result) {_showErrordialog(); return;}; const auth = apiman.getJWTToken(API_DOWNLOADFILE);
+   if (!securid.result) {_showErrorDialog(null,await i18n.get("DownloadFailed")); return;}; const auth = apiman.getJWTToken(API_DOWNLOADFILE);
    link.download = file; link.href = `${API_DOWNLOADFILE}?path=${selectedPath}&reqid=${reqid}&securid=${securid.id}&auth=${auth}&extrainfo=${JSON.stringify(extraInfo.extraInfo)}`; link.click(); 
 
    _showDownloadProgress(element, selectedPath, reqid);
@@ -563,7 +563,7 @@ function renameFile(element) {
 async function shareFile(element) {
    const paths = selectedPath.split("/"), name = paths[paths.length-1];
    const resp = await apiman.rest(API_SHAREFILE, "GET", _addExtraInfo({path: selectedPath, expiry: shareDuration}, element), true);
-   if (!resp || !resp.result) _showErrordialog(); else {
+   if (!resp || !resp.result) _showErrorDialog(); else {
       dialog(element).showDialog( `${DIALOGS_PATH}/sharefile.html`, true, true, 
       {link: router.encodeURL(`${PAGE_DOWNLOADFILE_SHARED}?id=${resp.id}&name=${name}`), id: resp.id, shareDuration, dialogpath: DIALOGS_PATH}, 
       FMDIALOG_ID, ["expiry"], async result => {
